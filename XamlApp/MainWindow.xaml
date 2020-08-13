@@ -1,0 +1,77 @@
+﻿<Window x:Class="SewingPatternBuilder.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SewingPatternBuilder"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="1060" Width="1920">
+    <DockPanel LastChildFill="True" HorizontalAlignment="Center" VerticalAlignment="Center" Height="1000">
+        <Menu x:Name="MainMenu" Background="LightGray" Height="20" DockPanel.Dock="Top" VerticalAlignment="Top">
+            <MenuItem x:Name="MainMenuFile" Header="Файл">
+                <MenuItem x:Name="MainMenuNewPattern" Header="Новая выкройка"/>
+                <MenuItem x:Name="MainMenuOpenPattern" Header="Открыть выкройку"/>
+                <MenuItem x:Name="MainMenuSavePattern" Header="Сохранить выкройку"/>
+                <MenuItem x:Name="MainMenuExit" Header="Выход"/>
+            </MenuItem>
+            <MenuItem x:Name="MainMenuEdit" Header="Правка"/>
+            <MenuItem x:Name="MainMenuView" Header="Вид"/>
+            <MenuItem x:Name="MainMenuSettings" Header="Настройки"/>
+            <MenuItem x:Name="MainMenuHelp" Header="Справка" Background="LightGray"/>
+        </Menu>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Height="20" Background="LightGray" HorizontalAlignment="Stretch" VerticalAlignment="Bottom">
+            <Button Background="Blue" Content="Это строка состояния, тут будет всякая инфа, чтобы было понятно что происходит" />
+            <Button Background="White" Content="Это второй блок состояний, тут тоже будем показывать полезности, чтобы было понятно что происходит" />
+            <Button Background="Red" Content="А это третий блок состояний, тут тоже будем что-то выводить, чтобы было понятно что происходит, бла бла бла просто текст чтобы заполнить строку до конца" />
+        </StackPanel>
+
+        <Grid x:Name="MenuTools" DockPanel.Dock="Top" HorizontalAlignment="Stretch" Background="#FFBBB9B9" VerticalAlignment="Top">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="120*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="360*"/>
+                <ColumnDefinition Width="360*"/>
+                <ColumnDefinition Width="360*"/>
+                <ColumnDefinition Width="360*"/>
+                <ColumnDefinition Width="360*"/>
+                <ColumnDefinition Width="360*"/>
+            </Grid.ColumnDefinitions>
+            <Button x:Name="UpButton1" Grid.Column="0" Grid.Row="0" Content="Ввод параметров выкройки" Background="LightGray" Click="UpButton1_Click" Height="60"/>
+            <Button x:Name="UpButton2" Grid.Column="1" Grid.Row="0" Content="Печать выкройки" Background="LightGray" Click="UpButton2_Click"/>
+            <Button x:Name="CropAndSave" Grid.Column="2" Grid.Row="0" Content="Нарезать и сохранить" Background="LightGray" Click="CropAndSave_Click" />
+            <Button Grid.Column="3" Grid.Row="0" Content="Открыть в реальном размере" Background="LightGray" Click="OpenInRealSizeButton_Click"/>
+            <Button Grid.Column="4" Grid.Row="0" Content="Панель Инструментов 5" Background="LightGray" />
+            <Button Grid.Column="5" Grid.Row="0" Content="Панель Инструментов 6" Background="LightGray" />
+        </Grid>
+        <Grid Background="LightGray" ShowGridLines="False" DockPanel.Dock="Left" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="60*"/>
+                <RowDefinition Height="60*"/>
+                <RowDefinition Height="60*"/>
+                <RowDefinition Height="60*"/>
+                <RowDefinition Height="60*"/>
+                <RowDefinition Height="60*"/>
+                <RowDefinition Height="60*"/>
+                <RowDefinition Height="60*"/>
+                <RowDefinition Height="60*"/>
+                <RowDefinition Height="60*"/>
+                <RowDefinition Height="60*"/>
+                <RowDefinition Height="60*"/>
+                <RowDefinition Height="60*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="60*"/>
+                <ColumnDefinition Width="60*"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Grid.Row="0" Content="Кнопка 1" Background="LightGray" Height="53.67" />
+            <Button Grid.Column="0" Grid.Row="1" Content="Кнопка 2" Background="LightGray" Height="53.67" />
+            <Button Grid.Column="1" Grid.Row="0" Content="Кнопка 3" Background="LightGray" />
+            <Button Grid.Column="1" Grid.Row="1" Content="Кнопка 4" Background="LightGray" />
+
+        </Grid>
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" DockPanel.Dock="Right" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid x:Name="MainViewPort" DockPanel.Dock="Right" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#FFE3E2FF"/>
+        </ScrollViewer>
+    </DockPanel>
+</Window>
