@@ -14,10 +14,10 @@ namespace SewingPatternBuilder
         public Dictionary<int, Point> PatternPoints = new Dictionary<int, Point>();
 
 
-        public struct Line
-        {
+        //public struct Line
+        //{
 
-        }
+        //}
 
         // Блок параметров выкройки
         private int patternType;
@@ -169,9 +169,11 @@ namespace SewingPatternBuilder
                 };
                 PatternPoints.Add(112, point12L);
 
-                Point point12R = new Point();
-                point12R.X = point12.X + MainWindow.rearTuck.GetSize();
-                point12R.Y = point12.Y; //Эта точка должна быть соединена линией с точкой 13
+                Point point12R = new Point
+                {
+                    X = point12.X + MainWindow.rearTuck.GetSize(),
+                    Y = point12.Y //Эта точка должна быть соединена линией с точкой 13
+                };
                 PatternPoints.Add(212, point12R);
 
                 point14.X = point4.X - MainWindow.sideTuck.GetSize();
@@ -225,44 +227,62 @@ namespace SewingPatternBuilder
                 point12.Y = point7.Y;
                 PatternPoints.Add(12, point12);
 
-                Point point16 = new Point();
-                point16.X = point12.X - 30;
-                point16.Y = point12.Y;
+                Point point16 = new Point
+                {
+                    X = point12.X - 30,
+                    Y = point12.Y
+                };
                 PatternPoints.Add(16, point16);
 
-                Point point16L = new Point();
-                point16L.X = point16.X - MainWindow.rearTuck.GetSize();
-                point16L.Y = point16.Y;
+                Point point16L = new Point
+                {
+                    X = point16.X - MainWindow.rearTuck.GetSize(),
+                    Y = point16.Y
+                };
                 PatternPoints.Add(116, point16L);
 
-                Point point16R = new Point();
-                point16R.X = point16.X + MainWindow.rearTuck.GetSize(); ;
+                Point point16R = new Point
+                {
+                    X = point16.X + MainWindow.rearTuck.GetSize()
+                };
+                ;
                 point16R.Y = 0;
                 PatternPoints.Add(216, point16R);
 
-                Point point16D = new Point();
-                point16D.X = point16.X;
-                point16D.Y = point16.Y + 90;
+                Point point16D = new Point
+                {
+                    X = point16.X,
+                    Y = point16.Y + 90
+                };
                 PatternPoints.Add(316, point16D);
 
-                Point point17 = new Point();
-                point17.X = point12.X + 30;
-                point17.Y = point12.Y;
+                Point point17 = new Point
+                {
+                    X = point12.X + 30,
+                    Y = point12.Y
+                };
                 PatternPoints.Add(17, point17);
 
-                Point point17L = new Point();
-                point17L.X = point17.X - MainWindow.rearTuck.GetSize();
-                point17L.Y = point17.Y;
+                Point point17L = new Point
+                {
+                    X = point17.X - MainWindow.rearTuck.GetSize(),
+                    Y = point17.Y
+                };
                 PatternPoints.Add(117, point17L);
 
-                Point point17R = new Point();
-                point17R.X = point17.X + MainWindow.rearTuck.GetSize(); ;
+                Point point17R = new Point
+                {
+                    X = point17.X + MainWindow.rearTuck.GetSize()
+                };
+                ;
                 point17R.Y = 0;
                 PatternPoints.Add(217, point17R);
 
-                Point point17D = new Point();
-                point17D.X = point17.X;
-                point17D.Y = point17.Y + 120;
+                Point point17D = new Point
+                {
+                    X = point17.X,
+                    Y = point17.Y + 120
+                };
                 PatternPoints.Add(317, point17D);
 
                 //Конец кода для двух задних вытачек
@@ -305,10 +325,10 @@ namespace SewingPatternBuilder
 
         }
 
-        public void BuildFigures()
-        {
+        //public void BuildFigures()
+        //{
 
-        }
+        //}
 
     }
 }
