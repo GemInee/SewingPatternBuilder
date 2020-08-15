@@ -272,10 +272,9 @@ namespace SewingPatternBuilder
 
                 Point point17R = new Point
                 {
-                    X = point17.X + MainWindow.rearTuck.GetSize()
+                    X = point17.X + MainWindow.rearTuck.GetSize(),
+                    Y = point17.Y
                 };
-                ;
-                point17R.Y = 0;
                 PatternPoints.Add(217, point17R);
 
                 Point point17D = new Point

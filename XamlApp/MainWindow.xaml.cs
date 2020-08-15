@@ -55,8 +55,8 @@ namespace SewingPatternBuilder
         public static GeometryDrawing geometryResult = null;
         public static System.Drawing.Image imageResult = null;
 
-        CreatePatternWindow createPatternWindow = new CreatePatternWindow();
-        RealSizeView realSizeView = new RealSizeView();
+        readonly CreatePatternWindow createPatternWindow = new CreatePatternWindow();
+        readonly RealSizeView realSizeView = new RealSizeView();
 
         public MainWindow()
         {
@@ -253,135 +253,199 @@ namespace SewingPatternBuilder
             //    MainViewPort.Children.Add(line);
             //}
 
-            GeometryDrawing geometryDrawing = new GeometryDrawing();
-            geometryDrawing.Pen = new System.Windows.Media.Pen(System.Windows.Media.Brushes.Black, 1);
+            GeometryDrawing geometryDrawing = new GeometryDrawing
+            {
+                Pen = new System.Windows.Media.Pen(System.Windows.Media.Brushes.Black, 1)
+            };
             geometryDrawing.Pen.Thickness = 1;
 
             geometryResult = geometryDrawing;
 
             PathGeometry pathGeometry = new PathGeometry();
-            PathFigure pathFigure1 = new PathFigure();
-            pathFigure1.StartPoint = basePattern.PatternPoints[1];
+            PathFigure pathFigure1 = new PathFigure
+            {
+                StartPoint = basePattern.PatternPoints[1]
+            };
             pathGeometry.Figures.Add(pathFigure1);
 
-            LineSegment p1p2 = new LineSegment();
-            p1p2.Point = basePattern.PatternPoints[2];
+            LineSegment p1p2 = new LineSegment
+            {
+                Point = basePattern.PatternPoints[2]
+            };
             pathFigure1.Segments.Add(p1p2);
 
-            LineSegment p2p18 = new LineSegment();
-            p2p18.Point = basePattern.PatternPoints[18];
+            LineSegment p2p18 = new LineSegment
+            {
+                Point = basePattern.PatternPoints[18]
+            };
             pathFigure1.Segments.Add(p2p18);
 
-            LineSegment p18p5 = new LineSegment();
-            p18p5.Point = basePattern.PatternPoints[5];
+            LineSegment p18p5 = new LineSegment
+            {
+                Point = basePattern.PatternPoints[5]
+            };
             pathFigure1.Segments.Add(p18p5);
 
-            LineSegment p5p14u = new LineSegment();
-            p5p14u.Point = basePattern.PatternPoints[114];
+            LineSegment p5p14u = new LineSegment
+            {
+                Point = basePattern.PatternPoints[114]
+            };
             pathFigure1.Segments.Add(p5p14u);
 
-            LineSegment p14up10r = new LineSegment();
-            p14up10r.Point = basePattern.PatternPoints[210];
+            LineSegment p14up10r = new LineSegment
+            {
+                Point = basePattern.PatternPoints[210]
+            };
             pathFigure1.Segments.Add(p14up10r);
 
-            LineSegment p10rp11 = new LineSegment();
-            p10rp11.Point = basePattern.PatternPoints[11];
+            LineSegment p10rp11 = new LineSegment
+            {
+                Point = basePattern.PatternPoints[11]
+            };
             pathFigure1.Segments.Add(p10rp11);
 
-            LineSegment p11p10l = new LineSegment();
-            p11p10l.Point = basePattern.PatternPoints[110];
+            LineSegment p11p10l = new LineSegment
+            {
+                Point = basePattern.PatternPoints[110]
+            };
             pathFigure1.Segments.Add(p11p10l);
 
-            LineSegment p10lp1 = new LineSegment();
-            p10lp1.Point = basePattern.PatternPoints[1];
+            LineSegment p10lp1 = new LineSegment
+            {
+                Point = basePattern.PatternPoints[1]
+            };
             pathFigure1.Segments.Add(p10lp1);
 
-            PathFigure pathFigure2 = new PathFigure();
-            pathFigure2.StartPoint = basePattern.PatternPoints[7];
+            PathFigure pathFigure2 = new PathFigure
+            {
+                StartPoint = basePattern.PatternPoints[7]
+            };
             pathGeometry.Figures.Add(pathFigure2);
 
-            LineSegment p7p17r = new LineSegment();
-            p7p17r.Point = basePattern.PatternPoints[217];
+            LineSegment p7p17r = new LineSegment
+            {
+                Point = basePattern.PatternPoints[217]
+            };
             pathFigure2.Segments.Add(p7p17r);
 
-            LineSegment p17rp17d = new LineSegment();
-            p17rp17d.Point = basePattern.PatternPoints[317];
+            LineSegment p17rp17d = new LineSegment
+            {
+                Point = basePattern.PatternPoints[317]
+            };
             pathFigure2.Segments.Add(p17rp17d);
 
-            LineSegment p17dp17l = new LineSegment();
-            p17dp17l.Point = basePattern.PatternPoints[117];
+            LineSegment p17dp17l = new LineSegment
+            {
+                Point = basePattern.PatternPoints[117]
+            };
             pathFigure2.Segments.Add(p17dp17l);
 
-            LineSegment p17lp16r = new LineSegment();
-            p17lp16r.Point = basePattern.PatternPoints[216];
+            LineSegment p17lp16r = new LineSegment
+            {
+                Point = basePattern.PatternPoints[216]
+            };
             pathFigure2.Segments.Add(p17lp16r);
 
-            LineSegment p16rp16d = new LineSegment();
-            p16rp16d.Point = basePattern.PatternPoints[316];
+            LineSegment p16rp16d = new LineSegment
+            {
+                Point = basePattern.PatternPoints[316]
+            };
             pathFigure2.Segments.Add(p16rp16d);
 
-            LineSegment p16dp16l = new LineSegment();
-            p16dp16l.Point = basePattern.PatternPoints[116];
+            LineSegment p16dp16l = new LineSegment
+            {
+                Point = basePattern.PatternPoints[116]
+            };
             pathFigure2.Segments.Add(p16dp16l);
 
-            LineSegment p16lp15u = new LineSegment();
-            p16lp15u.Point = basePattern.PatternPoints[115];
+            LineSegment p16lp15u = new LineSegment
+            {
+                Point = basePattern.PatternPoints[115]
+            };
             pathFigure2.Segments.Add(p16lp15u);
 
-            LineSegment p15up5 = new LineSegment();
-            p15up5.Point = basePattern.PatternPoints[5];
+            LineSegment p15up5 = new LineSegment
+            {
+                Point = basePattern.PatternPoints[5]
+            };
             pathFigure2.Segments.Add(p15up5);
 
-            LineSegment p5p19 = new LineSegment();
-            p5p19.Point = basePattern.PatternPoints[19];
+            LineSegment p5p19 = new LineSegment
+            {
+                Point = basePattern.PatternPoints[19]
+            };
             pathFigure2.Segments.Add(p5p19);
 
-            LineSegment p19p9 = new LineSegment();
-            p19p9.Point = basePattern.PatternPoints[9];
+            LineSegment p19p9 = new LineSegment
+            {
+                Point = basePattern.PatternPoints[9]
+            };
             pathFigure2.Segments.Add(p19p9);
 
-            LineSegment p9p7 = new LineSegment();
-            p9p7.Point = basePattern.PatternPoints[7];
+            LineSegment p9p7 = new LineSegment
+            {
+                Point = basePattern.PatternPoints[7]
+            };
             pathFigure2.Segments.Add(p9p7);
 
-            PathFigure pathFigure3 = new PathFigure();
-            pathFigure3.StartPoint = basePattern.PatternPoints[20];
+            PathFigure pathFigure3 = new PathFigure
+            {
+                StartPoint = basePattern.PatternPoints[20]
+            };
             pathGeometry.Figures.Add(pathFigure3);
 
-            LineSegment p20p9 = new LineSegment();
-            p20p9.Point = basePattern.PatternPoints[9];
+            LineSegment p20p9 = new LineSegment
+            {
+                Point = basePattern.PatternPoints[9]
+            };
             pathFigure3.Segments.Add(p20p9);
 
-            LineSegment p9p22 = new LineSegment();
-            p9p22.Point = basePattern.PatternPoints[22];
+            LineSegment p9p22 = new LineSegment
+            {
+                Point = basePattern.PatternPoints[22]
+            };
             pathFigure3.Segments.Add(p9p22);
 
-            LineSegment p22p21 = new LineSegment();
-            p22p21.Point = basePattern.PatternPoints[21];
+            LineSegment p22p21 = new LineSegment
+            {
+                Point = basePattern.PatternPoints[21]
+            };
             pathFigure3.Segments.Add(p22p21);
 
-            LineSegment p21p20 = new LineSegment();
-            p21p20.Point = basePattern.PatternPoints[20];
+            LineSegment p21p20 = new LineSegment
+            {
+                Point = basePattern.PatternPoints[20]
+            };
             pathFigure3.Segments.Add(p21p20);
 
-            PathFigure pathFigure4 = new PathFigure();
-            pathFigure4.StartPoint = basePattern.PatternPoints[21];
+            PathFigure pathFigure4 = new PathFigure
+            {
+                StartPoint = basePattern.PatternPoints[21]
+            };
             pathGeometry.Figures.Add(pathFigure4);
 
-            LineSegment p21p22 = new LineSegment();
-            p21p22.Point = basePattern.PatternPoints[22];
+            LineSegment p21p22 = new LineSegment
+            {
+                Point = basePattern.PatternPoints[22]
+            };
             pathFigure4.Segments.Add(p21p22);
 
-            LineSegment p22p22r = new LineSegment();
-            p22p22r.Point = basePattern.PatternPoints[122];
+            LineSegment p22p22r = new LineSegment
+            {
+                Point = basePattern.PatternPoints[122]
+            };
             pathFigure4.Segments.Add(p22p22r);
 
-            LineSegment p22rp21r = new LineSegment();
-            p22rp21r.Point = basePattern.PatternPoints[121];
+            LineSegment p22rp21r = new LineSegment
+            {
+                Point = basePattern.PatternPoints[121]
+            };
             pathFigure4.Segments.Add(p22rp21r);
 
-            LineSegment p21rp21 = new LineSegment();
-            p21rp21.Point = basePattern.PatternPoints[21];
+            LineSegment p21rp21 = new LineSegment
+            {
+                Point = basePattern.PatternPoints[21]
+            };
             pathFigure4.Segments.Add(p21rp21);
             
             geometryDrawing.Geometry = pathGeometry;
@@ -413,6 +477,9 @@ namespace SewingPatternBuilder
             //Выведем в основное окно превьюшку, где 1 пиксел изображения равен 1 мм реального размера выкройки
             MainViewPort.Children.Add(image);
 
+            var realSizeImage = new System.Windows.Controls.Image { Source = bitmap };
+            realSizeView.RealSizeViewPort.Children.Add(realSizeImage);
+
         }
 
         public void PrintPattern()
@@ -434,7 +501,7 @@ namespace SewingPatternBuilder
                 this.MainViewPort.LayoutTransform = new ScaleTransform(scale, scale);
 
                 //Получим у принтера размер страницы
-                System.Windows.Size size = new System.Windows.Size(capabilities.PageImageableArea.ExtentWidth, capabilities.PageImageableArea.ExtentHeight);
+                //System.Windows.Size size = new System.Windows.Size(capabilities.PageImageableArea.ExtentWidth, capabilities.PageImageableArea.ExtentHeight);
 
                 //Скомпануем изображение под размер страницы
                 //this.MainViewPort.Measure(size);
@@ -450,9 +517,11 @@ namespace SewingPatternBuilder
         private void CropAndSave_Click(object sender, RoutedEventArgs e)
         {
 
-            System.Drawing.Size size = new System.Drawing.Size();
-            size.Width = 300;
-            size.Height = 300;
+            //System.Drawing.Size size = new System.Drawing.Size
+            //{
+            //    Width = 300,
+            //    Height = 300
+            //};
             Bitmap bitmapImageLocal = new Bitmap("C:\\patternbuildertest\\PatternFull.png", true);
             System.Drawing.Rectangle cloneRect = new System.Drawing.Rectangle(0, 0, 300, 300);
 
