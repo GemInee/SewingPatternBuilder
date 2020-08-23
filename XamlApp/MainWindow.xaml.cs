@@ -55,6 +55,11 @@ namespace SewingPatternBuilder
         public static GeometryDrawing geometryResult = null;
         public static System.Drawing.Image imageResult = null;
 
+        public MemoryStream memoryStreamForImageConvertation = new MemoryStream(); //Мемористрим для конвертации изображений через файлы
+
+        public int pagePrintableWidth = 0;
+        public int pagePrintableHeight = 0;
+
         readonly CreatePatternWindow createPatternWindow = new CreatePatternWindow();
         readonly RealSizeView realSizeView = new RealSizeView();
 
@@ -469,7 +474,7 @@ namespace SewingPatternBuilder
             var encoder = new PngBitmapEncoder();
             encoder.Frames.Add(BitmapFrame.Create(bitmap));
 
-            using (var stream = new FileStream("C:\\patternbuildertest\\PatternFull.png", FileMode.Create))
+            using (var stream = new FileStream("C:\\patternbuildertest\\PatternFull.Png", FileMode.Create))
             {
                 encoder.Save(stream);
             }
@@ -486,49 +491,114 @@ namespace SewingPatternBuilder
         {
             PrintDialog printDialog = new PrintDialog();
 
+
+
             if (printDialog.ShowDialog() == true)
             {
-                //Смасштабируем изображение под область просмотра
-                //imageResult.Stretch = Stretch.Uniform;
 
-                //Получаем инфу о возможностях принтера
-                PrintCapabilities capabilities = printDialog.PrintQueue.GetPrintCapabilities(printDialog.PrintTicket);
-
-                //Получаем масштаб изображения WPF
-                double scale = Math.Min(capabilities.PageImageableArea.ExtentWidth / geometryResult.Geometry.Bounds.Width, capabilities.PageImageableArea.ExtentHeight / geometryResult.Geometry.Bounds.Height);
-
-                //Преобразуем изображение в нужный масштаб
-                this.MainViewPort.LayoutTransform = new ScaleTransform(scale, scale);
-
-                //Получим у принтера размер страницы
-                //System.Windows.Size size = new System.Windows.Size(capabilities.PageImageableArea.ExtentWidth, capabilities.PageImageableArea.ExtentHeight);
-
-                //Скомпануем изображение под размер страницы
-                //this.MainViewPort.Measure(size);
-                //this.MainViewPort.Arrange(new Rect(new System.Windows.Point(capabilities.PageImageableArea.ExtentWidth, capabilities.PageImageableArea.ExtentHeight), size));
-
-                //Выведем на печать изображение, заполнив им одну страницу
-                printDialog.PrintVisual(this.MainViewPort, "Тестовая печать");
             }
-
 
         }
 
         private void CropAndSave_Click(object sender, RoutedEventArgs e)
         {
+            //PrintDialog printDialog = new PrintDialog();
+            //Выясним какого размера печатная область у нашего принтера
+            pagePrintableWidth = 700; //Для теста укажем ручками, так как принтер не выбран и мы не знаем его область печати
+            pagePrintableHeight = 1000; //Для теста укажем ручками, так как принтер не выбран и мы не знаем его область печати
 
-            //System.Drawing.Size size = new System.Drawing.Size
-            //{
-            //    Width = 300,
-            //    Height = 300
-            //};
+            //Сделаем локально объект и считаем в него полноразмерное изображение выкройки из файла. В будущем нужно использовать память.
             Bitmap bitmapImageLocal = new Bitmap("C:\\patternbuildertest\\PatternFull.png", true);
-            System.Drawing.Rectangle cloneRect = new System.Drawing.Rectangle(0, 0, 300, 300);
 
-            System.Drawing.Imaging.PixelFormat format = bitmapImageLocal.PixelFormat;
-            Bitmap cropImage = bitmapImageLocal.Clone(cloneRect, format);
+            //Зададим переменные для управления параметрами нарезочного прямоугольника
+            int x = 0;
+            int y = 0;
+            int cloneRectWidth = pagePrintableWidth;
+            int cloneRectHeight = pagePrintableHeight;
+            int widthResidue = bitmapImageLocal.Width;
+            int heightResidue = bitmapImageLocal.Height;
 
-            cropImage.Save("C:\\patternbuildertest\\PatternCrop.png", ImageFormat.Png);
+
+            //Подготовим прямоугольник для нарезки изображения
+            System.Drawing.Rectangle cloneRect = new System.Drawing.Rectangle(x, y, cloneRectWidth, cloneRectHeight);
+            
+            //Подготовим символы для кодирования результатов нарезки, чтобы потом можно было их собрать в бумаге
+            char xPageID = '\u0041'; //Используем буквы для нумерации "колонок" при нарезке изображения
+
+            //В цикле последовательно нарежем полноразмерную выкройку на части для печати на листе А4
+            //Сначала будем проходить изоражение по вертикали, затем сдвигаться вправо и снова проходить по вертикали, пока не пройдём его целиком по ширине и вертикали
+            while (widthResidue >= 0) //Проверяем, есть ли ещё отрезать в ширину. Остаток ширины должен быть больше нуля, если меньше, значит картинка закончилась
+            {
+                //Перед нарезкой новой колонки, сбросим номер строки. Каждый раз начинаем со строки номер 1
+                char yPageID = '\u0031'; //Используем цифры для нумерации "строк" при нарезке изображения
+
+                //Установим прямоугольник нарезки на верхний край изображения в начале каждой новой колонки
+                y = 0;
+
+                if (cloneRectWidth >= widthResidue) 
+                { 
+                    cloneRect.Width = cloneRectWidth - (cloneRectWidth - widthResidue); 
+                }
+                else
+                { 
+                    cloneRect.Width = pagePrintableWidth; 
+                }
+
+                cloneRect.Height = pagePrintableHeight; //Восстановим высоту области обрезки перед новым циклом
+                heightResidue = bitmapImageLocal.Height; //Восстановим запас высоты изображения для нового цикла
+
+                while (heightResidue >= 0) //Проверяем, есть ли ещё что отрезать в высоту. остаток высоты должен быть больше нуля, если меньше, значит картинка закончилась
+                {
+                    cloneRect.X = x;
+                    
+                    if (cloneRectHeight >= heightResidue)
+                    { 
+                        cloneRect.Height = cloneRectHeight - (cloneRectHeight - heightResidue); //Проверить логику, кажется можно просто приравнять высоту остаточной высоте
+                    }
+                    else
+                    { 
+                        cloneRect.Height = pagePrintableHeight; 
+                    }
+
+                    cloneRect.Y = y;
+
+                    System.Drawing.Imaging.PixelFormat format = bitmapImageLocal.PixelFormat;
+                    string filename = "C:\\patternbuildertest\\PatternCrop_" + xPageID + yPageID + ".png";
+
+
+                    using (var cropImage = new Bitmap(bitmapImageLocal.Clone(cloneRect, format)))
+                    {
+                        try {
+                            cropImage.Save(filename, ImageFormat.Png);
+
+                        } finally
+                        {
+                            //cropImage.UnlockBits(cropImage.LockBits(cloneRect, ImageLockMode.ReadWrite, cropImage.PixelFormat)); //Возможно лишнее, мы же ничего не лочили
+                            cropImage.Dispose(); //Типа деструктор, чтобы в результате using мы точно убили объект и могли содать его снова
+
+                        }
+                    }
+
+                    y += pagePrintableHeight; //Сдвигаемся вниз на высоту листа
+
+                    heightResidue -= cloneRectHeight; //Уменьшим остаток высоты
+
+                    yPageID++; //Увеличим номер строки
+                }
+
+                //Сдвигаемся в правок по картинке на ширину листа
+                x += pagePrintableWidth;
+
+                widthResidue -= cloneRectWidth;
+
+                //Берем следующую букву колонки
+                xPageID++;
+
+            }
+
+
+
+
 
 
             //var encoder = new PngBitmapEncoder();
