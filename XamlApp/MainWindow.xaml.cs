@@ -26,11 +26,35 @@ namespace SewingPatternBuilder
     /// </summary>
     public partial class MainWindow : Window
     {
+        //Подготовим структуру для объединения обрезков с их координатами для последующего складирования в словаре
+        public struct CroppedImage
+        {
+            public CroppedImage(char xPageID, char yPageID, Bitmap bitmap)
+            {
+                XPageID = xPageID;
+                YPageID = yPageID;
+                NewBitmap = bitmap;
+            }
+            public char XPageID { get; set; }
+            public char YPageID { get; set; }
+            public Bitmap NewBitmap { get; set; }
+        }
+
         //Создадим служебные словари с вариантами параметров выкорек и список возможных мерок
 
+        //Словаь для хранения списка первичных мерок
         public static Dictionary<int, Measure> RawMeasureList = new Dictionary<int, Measure>();
+        
+        //Словарь для хранения производных мерок
         public static Dictionary<int, Measure> DerivativeMeasureList = new Dictionary<int, Measure>();
+        
+        //Словарь для хранения нарезанных изображений
+        public static Dictionary<int, CroppedImage> CropedFullSizeImages = new Dictionary<int, CroppedImage>();
+        
+        //Словарь для хранения оверлеев для нарезанных изображений
+        public static Dictionary<int, Bitmap> OverlayImagesForCropedImages = new Dictionary<int, Bitmap>();
 
+        //Сформируем объекты меров для работы (в будущем надо брать из базы и формировать только те, что нужны, а не все сразу)
         public static Measure waist = new Measure(0, "Обхват талии", 0, 100);
         public static Measure waist2 = new Measure(1, "Обхват талии 2", 0, 100);
         public static Measure hip = new Measure(3, "Обхват бедер", 0, 0);
@@ -51,17 +75,20 @@ namespace SewingPatternBuilder
         public static Measure frontTuck = new Measure(10, "Передняя вытачка", 0, 9);
         public static Measure rearTuck = new Measure(11, "Задняя вытачка", 0, 9);
         public static Measure sideTuck = new Measure(12, "Боковая вытачка", 0, 9);
-        public static BasePattern basePattern = new BasePattern();
-        public static GeometryDrawing geometryResult = null;
-        public static System.Drawing.Image imageResult = null;
+        public static BasePattern basePattern = new BasePattern(); //Сразу подготовим главный рабочий объект программы. В будущем надо работать с множетсвом таких и хранить их в базе.
+        public static GeometryDrawing geometryResult = null; //Запишем сюда результат построения, чтобы использовать его где потребуемся
+        public static System.Drawing.Image imageResult = null; //Запишем сюда результат преобразования геометрии в изображения, чтобы использовать его где потребуется
+
+
 
         public MemoryStream memoryStreamForImageConvertation = new MemoryStream(); //Мемористрим для конвертации изображений через файлы
 
+        //Заготовим переменные для ширины и высоты печатной области. Целочисленное, 1 = пиксель
         public int pagePrintableWidth = 0;
         public int pagePrintableHeight = 0;
 
-        readonly CreatePatternWindow createPatternWindow = new CreatePatternWindow();
-        readonly RealSizeView realSizeView = new RealSizeView();
+        readonly CreatePatternWindow createPatternWindow = new CreatePatternWindow(); //Создадим окно ввода параметров выкройки
+        readonly RealSizeView realSizeView = new RealSizeView(); //Создадим окно для отображения полноразмерной выкройки
 
         public MainWindow()
         {
@@ -72,12 +99,12 @@ namespace SewingPatternBuilder
             //Настроим объекты мерок, которые доступны в программе и добавим их в словари
             //Сначала настроим все объекты первичных мерок и добавим в словари
             InitRawMeasures();
+
             //Теперь настроим все объекты производных мерок и добавим в словарь
             InitDerivativeMeasures();
 
             //Когда объекты мерок инициализированы, выполним инструкции после загрузки
-            this.Loaded += MainWindow_Loaded; //Назначим новому окну владельца, чтобы пользоваться методами владельца
-
+            this.Loaded += MainWindow_Loaded; //Назнmачим новому окну владельца, чтобы пользоваться методами владельца
 
         }
 
@@ -171,8 +198,6 @@ namespace SewingPatternBuilder
         private void RecalculateRawMeasures()
         {
 
-
-
             foreach (KeyValuePair<int, Measure> kvp in DerivativeMeasureList)
             {
                 kvp.Value.SetSize(kvp.Value.Id, basePattern.FittingType, basePattern.Elasticity);
@@ -262,7 +287,6 @@ namespace SewingPatternBuilder
             {
                 Pen = new System.Windows.Media.Pen(System.Windows.Media.Brushes.Black, 1)
             };
-            geometryDrawing.Pen.Thickness = 1;
 
             geometryResult = geometryDrawing;
 
@@ -517,20 +541,20 @@ namespace SewingPatternBuilder
             int cloneRectHeight = pagePrintableHeight;
             int widthResidue = bitmapImageLocal.Width;
             int heightResidue = bitmapImageLocal.Height;
-
+            int bitmapImageKey = 0; //Переменная для отслеживания инкремента ключа с которым обрезанное изображение помещаем в словарик
 
             //Подготовим прямоугольник для нарезки изображения
             System.Drawing.Rectangle cloneRect = new System.Drawing.Rectangle(x, y, cloneRectWidth, cloneRectHeight);
             
             //Подготовим символы для кодирования результатов нарезки, чтобы потом можно было их собрать в бумаге
-            char xPageID = '\u0041'; //Используем буквы для нумерации "колонок" при нарезке изображения
+            char CurrentXPageID = '\u0041'; //Используем буквы для нумерации "колонок" при нарезке изображения
 
             //В цикле последовательно нарежем полноразмерную выкройку на части для печати на листе А4
             //Сначала будем проходить изоражение по вертикали, затем сдвигаться вправо и снова проходить по вертикали, пока не пройдём его целиком по ширине и вертикали
             while (widthResidue >= 0) //Проверяем, есть ли ещё отрезать в ширину. Остаток ширины должен быть больше нуля, если меньше, значит картинка закончилась
             {
                 //Перед нарезкой новой колонки, сбросим номер строки. Каждый раз начинаем со строки номер 1
-                char yPageID = '\u0031'; //Используем цифры для нумерации "строк" при нарезке изображения
+                char CurrentYPageID = '\u0031'; //Используем цифры для нумерации "строк" при нарезке изображения
 
                 //Установим прямоугольник нарезки на верхний край изображения в начале каждой новой колонки
                 y = 0;
@@ -563,12 +587,16 @@ namespace SewingPatternBuilder
                     cloneRect.Y = y;
 
                     System.Drawing.Imaging.PixelFormat format = bitmapImageLocal.PixelFormat;
-                    string filename = "C:\\patternbuildertest\\PatternCrop_" + xPageID + yPageID + ".png";
+                    string filename = "C:\\patternbuildertest\\PatternCrop_" + CurrentXPageID + CurrentYPageID + ".png";
 
 
                     using (var cropImage = new Bitmap(bitmapImageLocal.Clone(cloneRect, format)))
                     {
                         try {
+                            CroppedImage croppedImage = new CroppedImage(CurrentXPageID, CurrentYPageID, cropImage);
+                            CropedFullSizeImages.Add(bitmapImageKey, croppedImage);
+                            bitmapImageKey++; 
+
                             cropImage.Save(filename, ImageFormat.Png);
 
                         } finally
@@ -583,7 +611,7 @@ namespace SewingPatternBuilder
 
                     heightResidue -= cloneRectHeight; //Уменьшим остаток высоты
 
-                    yPageID++; //Увеличим номер строки
+                    CurrentYPageID++; //Увеличим номер строки
                 }
 
                 //Сдвигаемся в правок по картинке на ширину листа
@@ -592,7 +620,7 @@ namespace SewingPatternBuilder
                 widthResidue -= cloneRectWidth;
 
                 //Берем следующую букву колонки
-                xPageID++;
+                CurrentXPageID++;
 
             }
 
