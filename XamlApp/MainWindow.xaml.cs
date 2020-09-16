@@ -26,22 +26,8 @@ namespace SewingPatternBuilder
     /// </summary>
     public partial class MainWindow : Window
     {
-        //Подготовим структуру для объединения обрезков с их координатами для последующего складирования в словаре
-        public struct CroppedImage
-        {
-            public CroppedImage(char xPageID, char yPageID, Bitmap bitmap)
-            {
-                XPageID = xPageID;
-                YPageID = yPageID;
-                NewBitmap = bitmap;
-            }
-            public char XPageID { get; set; }
-            public char YPageID { get; set; }
-            public Bitmap NewBitmap { get; set; }
-        }
 
         //Создадим служебные словари с вариантами параметров выкорек и список возможных мерок
-
         //Словаь для хранения списка первичных мерок
         public static Dictionary<int, Measure> RawMeasureList = new Dictionary<int, Measure>();
         
@@ -624,18 +610,7 @@ namespace SewingPatternBuilder
 
             }
 
-
-
-
-
-
-            //var encoder = new PngBitmapEncoder();
-            //encoder.Frames.Add(BitmapFrame.Create(cropImage));
-
-            //using (var stream = new FileStream("C:\\patternbuildertest\\PatternCrop.png", FileMode.Create))
-            //{
-            //    encoder.Save(stream);
-            //}
+            
 
 
 
