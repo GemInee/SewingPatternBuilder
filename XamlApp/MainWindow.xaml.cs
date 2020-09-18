@@ -468,6 +468,8 @@ namespace SewingPatternBuilder
             DrawingImage geometryImage = new DrawingImage(geometryDrawing);
             geometryImage.Freeze();
 
+
+            //РЕФАКТОРИНГ. Нужно вытащить это в отдельный метод.
             var image = new System.Windows.Controls.Image { Source = geometryImage };
             double scale;
             scale = 3.7938105;
@@ -508,6 +510,25 @@ namespace SewingPatternBuilder
 
             }
 
+        }
+
+        //Метод конвертатор из Bitmap в Image для отображения в интерфейсе
+        public System.Windows.Controls.Image ConvertImage(Bitmap bitmap)
+        {
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+
+                bitmap.Save(memoryStream, ImageFormat.Bmp);
+                BitmapImage bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memoryStream;
+                bitmapImage.EndInit();
+
+                System.Windows.Controls.Image drawingImage = new System.Windows.Controls.Image();
+                drawingImage.Source = bitmapImage;
+                bitmap.Dispose();
+                return drawingImage;
+            }
         }
 
         private void CropAndSave_Click(object sender, RoutedEventArgs e)
