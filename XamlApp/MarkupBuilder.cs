@@ -8,7 +8,9 @@ using System.Drawing.Imaging;
 using System.Windows;
 using System.Windows.Controls;
 using System.IO;
-
+using System.Drawing.Drawing2D;
+using Brush = System.Drawing.Brush;
+using Pen = System.Drawing.Pen;
 
 namespace SewingPatternBuilder
 {
@@ -21,7 +23,7 @@ namespace SewingPatternBuilder
 
         public int GluingPointIndent { get => gluingPointIndent; set => gluingPointIndent = value; }
         public int PrintablePageWidth { get => printablePageWidth; set => printablePageWidth = value; }
-        public int PrintablePageHeith { get => printablePageHeight; set => printablePageHeight = value; }
+        public int PrintablePageHeigth { get => printablePageHeight; set => printablePageHeight = value; }
 
 
         public MarkupBuilder(int PrintablePageHeight, int PrintablePageWidth, int GluingPointIndent)
@@ -176,9 +178,11 @@ namespace SewingPatternBuilder
             var markupDrawingImage = new DrawingImage(markupGeometry);
             markupDrawingImage.Freeze();
 
+            //Конвертируем изображение в битмап для дальнейшей обработки
             var markupImage = new System.Windows.Controls.Image { Source = markupDrawingImage };
             double scale;
             scale = 1; //scale = 3.7938105; Здесь масштабировать не нужно, так как работаем с уже реальным масштабом
+            double scaleSquare = 3.7938105;
             var width = markupGeometry.Bounds.Width * scale; //Пока сохраним это. Пригодится при рефакторинге
             var height = markupGeometry.Bounds.Height * scale; // Пока сохраним это. Пригодится при рефакторинге
             markupImage.Arrange(new Rect(startPoint.X, startPoint.Y, width, height));
@@ -203,6 +207,57 @@ namespace SewingPatternBuilder
 
                 encoderMemStream.Save(mStream);
                 var markupBitmap = new Bitmap(mStream);
+
+                //RectangleF upTextRect = new RectangleF(GluingPointIndent, 0, croppedImage.CroppedBitmap.Width, -GluingPointIndent);
+                RectangleF upTextRect = new RectangleF(GluingPointIndent,0, Convert.ToSingle(markupRTBitmap.Width), GluingPointIndent);
+                var xUpChar = croppedImage.XPageID;
+                var yUpChar = croppedImage.YPageID;
+                string upText = "" + xUpChar + --yUpChar + "";
+                Graphics graphUpText = Graphics.FromImage(markupBitmap);
+                graphUpText.SmoothingMode = SmoothingMode.AntiAlias;
+                graphUpText.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphUpText.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                StringFormat upStringFormat = new StringFormat();
+                upStringFormat.Alignment = StringAlignment.Center;
+                upStringFormat.LineAlignment = StringAlignment.Center;
+                graphUpText.DrawString(upText, new Font("Arial", 16), System.Drawing.Brushes.Gray, upTextRect, upStringFormat);
+
+
+                //RectangleF leftTextRect = new RectangleF(0, -GluingPointIndent, GluingPointIndent, croppedImage.CroppedBitmap.Height);
+                RectangleF leftTextRect = new RectangleF(0, GluingPointIndent, GluingPointIndent, Convert.ToSingle(markupRTBitmap.Height));
+
+                var xLeftChar = croppedImage.XPageID;
+                var yLeftChar = croppedImage.YPageID;
+                string leftText = "" + --xLeftChar + yLeftChar + "";
+                
+                Graphics graphLeftText = Graphics.FromImage(markupBitmap);
+                graphLeftText.SmoothingMode = SmoothingMode.AntiAlias;
+                graphLeftText.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphLeftText.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                
+                StringFormat leftStringFormat = new StringFormat();
+                leftStringFormat.Alignment = StringAlignment.Center;
+                leftStringFormat.LineAlignment = StringAlignment.Center;
+                graphLeftText.DrawString(leftText, new Font("Arial", 16), System.Drawing.Brushes.Gray, leftTextRect, leftStringFormat);
+
+                
+                Rectangle centerTextRect = new Rectangle((Convert.ToInt32(markupRTBitmap.Width) / 2 ) - Convert.ToInt32(50*scaleSquare), (Convert.ToInt32(markupRTBitmap.Height) / 2) - Convert.ToInt32(50 * scaleSquare), Convert.ToInt32(100 * scaleSquare), Convert.ToInt32(100 * scaleSquare));
+                var xCenterChar = croppedImage.XPageID;
+                var yCenterChar = croppedImage.YPageID;
+                string centerText = "" + xCenterChar + yCenterChar + "";
+                
+                Graphics graphCenterText = Graphics.FromImage(markupBitmap);
+                graphCenterText.SmoothingMode = SmoothingMode.AntiAlias;
+                graphCenterText.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphCenterText.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                
+                StringFormat centerStringFormat = new StringFormat();
+                centerStringFormat.Alignment = StringAlignment.Center;
+                centerStringFormat.LineAlignment = StringAlignment.Center;
+                graphCenterText.DrawString(centerText, new Font("Arial", 36), System.Drawing.Brushes.LightGray, centerTextRect, centerStringFormat);
+                Pen pen = new Pen(System.Drawing.Color.DarkGray);
+                graphCenterText.DrawRectangle(pen, centerTextRect);
+
                 return markupBitmap;
             }
 

@@ -36,6 +36,9 @@ namespace SewingPatternBuilder
         
         //Словарь для хранения нарезанных изображений
         public static Dictionary<int, CroppedImage> CropedFullSizeImages = new Dictionary<int, CroppedImage>();
+
+        //Словарь для хранения нарезанных изображений с разметкой
+        public static Dictionary<int, CroppedImage> MarkedupCroppedImages = new Dictionary<int, CroppedImage>();
         
         //Словарь для хранения оверлеев для нарезанных изображений
         public static Dictionary<int, Bitmap> OverlayImagesForCropedImages = new Dictionary<int, Bitmap>();
@@ -64,6 +67,7 @@ namespace SewingPatternBuilder
         public static BasePattern basePattern = new BasePattern(); //Сразу подготовим главный рабочий объект программы. В будущем надо работать с множетсвом таких и хранить их в базе.
         public static GeometryDrawing geometryResult = null; //Запишем сюда результат построения, чтобы использовать его где потребуемся
         public static System.Drawing.Image imageResult = null; //Запишем сюда результат преобразования геометрии в изображения, чтобы использовать его где потребуется
+        public static Bitmap fullSizePatternBitmap = null; //Здесь будем хранить и получать полноразмерный битмап текущей выкройки. (потом надо переделать для подержки многократного построения)
 
 
 
@@ -264,6 +268,8 @@ namespace SewingPatternBuilder
 
             geometryResult = geometryDrawing;
 
+            // РЕФАКТОРИНГ. Нужно заменить на универсальный построитель выкроек
+            #region Начало построения геометрии выкройки
             PathGeometry pathGeometry = new PathGeometry();
             PathFigure pathFigure1 = new PathFigure
             {
@@ -450,7 +456,8 @@ namespace SewingPatternBuilder
                 Point = basePattern.PatternPoints[21]
             };
             pathFigure4.Segments.Add(p21rp21);
-            
+            #endregion
+
             geometryDrawing.Geometry = pathGeometry;
 
             DrawingImage geometryImage = new DrawingImage(geometryDrawing);
@@ -467,14 +474,23 @@ namespace SewingPatternBuilder
 
             var bitmap = new RenderTargetBitmap((int)width, (int)height, 96, 96, PixelFormats.Pbgra32);
             bitmap.Render(image);
-
+            
             var encoder = new PngBitmapEncoder();
             encoder.Frames.Add(BitmapFrame.Create(bitmap));
 
-            using (var stream = new FileStream("C:\\patternbuildertest\\PatternFull.Png", FileMode.Create))
+            using (var mStream = new MemoryStream())
             {
-                encoder.Save(stream);
+                encoder.Save(mStream);
+                fullSizePatternBitmap = new Bitmap(mStream);
             }
+
+
+            ////Устарел. Теперь это тестовый код для проверки результата построения и рендеринга
+            //using (var fStream = new FileStream("C:\\patternbuildertest\\PatternFull.Png", FileMode.Create))
+            //{
+            //    encoder.Save(fStream);
+            //}
+            
 
             image.Source = geometryImage;
             image.Stretch = Stretch.None;
@@ -527,7 +543,8 @@ namespace SewingPatternBuilder
             pagePrintableHeight = 1000; //Для теста укажем ручками, так как принтер не выбран и мы не знаем его область печати
 
             //Сделаем локально объект и считаем в него полноразмерное изображение выкройки из файла. В будущем нужно использовать память.
-            Bitmap bitmapImageLocal = new Bitmap("C:\\patternbuildertest\\PatternFull.png", true);
+            //Bitmap bitmapImageLocal = new Bitmap("C:\\patternbuildertest\\PatternFull.png", true);
+            Bitmap bitmapImageLocal = (Bitmap)fullSizePatternBitmap.Clone();
 
             //Зададим переменные для управления параметрами нарезочного прямоугольника
             int x = 0;
@@ -583,8 +600,8 @@ namespace SewingPatternBuilder
 
                     System.Drawing.Imaging.PixelFormat format = bitmapImageLocal.PixelFormat;
                     string filename = "C:\\patternbuildertest\\PatternCrop_" + CurrentXPageID + CurrentYPageID + ".png";
-                    string markupfFilename = "C:\\patternbuildertest\\PatternCropMarkup_" + CurrentXPageID + CurrentYPageID + ".png";
-
+                    //string markupfFilename = "C:\\patternbuildertest\\PatternCropMarkup_" + CurrentXPageID + CurrentYPageID + ".png"; //Часть тестового кода для вывода разметки в файл
+                    string markedupCroppFilename = "C:\\patternbuildertest\\PatternMarkedCrop_" + CurrentXPageID + CurrentYPageID + ".png";
 
                     using (var cropImage = new Bitmap(bitmapImageLocal.Clone(cloneRect, format)))
                     {
@@ -596,9 +613,19 @@ namespace SewingPatternBuilder
                             cropImage.Save(filename, ImageFormat.Png);
 
                             MarkupBuilder markupBuilder = new MarkupBuilder(1000, 1200, 40); //Пока хардкодом для теста зададим размер области печати принтера и ширину области склейки
+                            var markupBitmap = new Bitmap(markupBuilder.BuildMarkup(croppedImage));
 
-                            var testBitmap = new Bitmap (markupBuilder.BuildMarkup(croppedImage));
-                            testBitmap.Save(markupfFilename, ImageFormat.Png);
+                            //Объединяем нарезку с разметкой. РЕФАКТОРИНГ. Вытащить этот код в отдельный метод или даже объект
+                            var markedupCroppBitmap = new Bitmap(markupBitmap.Width, markupBitmap.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                            var graphics = Graphics.FromImage(markedupCroppBitmap);
+                            graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
+                            graphics.DrawImage(markupBitmap, 0, 0);
+                            graphics.DrawImage(croppedImage.CroppedBitmap, 40, 40);
+
+                            markedupCroppBitmap.Save(markedupCroppFilename, ImageFormat.Png);
+
+                            //// Тестовый код для проверки вывода разметки как конечного результата. Мбыть переделать в юнит-тест? (как тестить картиночки?) 
+                            //testBitmap.Save(markupfFilename, ImageFormat.Png);
 
                         } finally
                         {
