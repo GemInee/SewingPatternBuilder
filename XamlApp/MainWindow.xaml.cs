@@ -256,19 +256,7 @@ namespace SewingPatternBuilder
 
         public void BuildPattern()
         {
-            //foreach (KeyValuePair<int, Point> kvp in basePattern.PatternPoints)
-            //{
-            //    Line line = new Line();
-            //    line.X1 = kvp.Value.X;
-            //    line.Y1 = kvp.Value.Y + 50;
-            //    line.X2 = line.X1 + 1;
-            //    line.Y2 = line.Y1 + 1;
-            //    line.Stroke = Brushes.Black;
-            //    line.StrokeThickness = 3;
-            //    line.ToolTip = kvp.Key;
-            //    MainViewPort.Children.Add(line);
-            //}
-
+ 
             GeometryDrawing geometryDrawing = new GeometryDrawing
             {
                 Pen = new System.Windows.Media.Pen(System.Windows.Media.Brushes.Black, 1)
@@ -480,9 +468,6 @@ namespace SewingPatternBuilder
             var bitmap = new RenderTargetBitmap((int)width, (int)height, 96, 96, PixelFormats.Pbgra32);
             bitmap.Render(image);
 
-            image.Source = geometryImage;
-            image.Stretch = Stretch.None;
-
             var encoder = new PngBitmapEncoder();
             encoder.Frames.Add(BitmapFrame.Create(bitmap));
 
@@ -490,6 +475,9 @@ namespace SewingPatternBuilder
             {
                 encoder.Save(stream);
             }
+
+            image.Source = geometryImage;
+            image.Stretch = Stretch.None;
 
             //Выведем в основное окно превьюшку, где 1 пиксел изображения равен 1 мм реального размера выкройки
             MainViewPort.Children.Add(image);
@@ -595,6 +583,7 @@ namespace SewingPatternBuilder
 
                     System.Drawing.Imaging.PixelFormat format = bitmapImageLocal.PixelFormat;
                     string filename = "C:\\patternbuildertest\\PatternCrop_" + CurrentXPageID + CurrentYPageID + ".png";
+                    string markupfFilename = "C:\\patternbuildertest\\PatternCropMarkup_" + CurrentXPageID + CurrentYPageID + ".png";
 
 
                     using (var cropImage = new Bitmap(bitmapImageLocal.Clone(cloneRect, format)))
@@ -605,6 +594,11 @@ namespace SewingPatternBuilder
                             bitmapImageKey++; 
 
                             cropImage.Save(filename, ImageFormat.Png);
+
+                            MarkupBuilder markupBuilder = new MarkupBuilder(1000, 1200, 40); //Пока хардкодом для теста зададим размер области печати принтера и ширину области склейки
+
+                            var testBitmap = new Bitmap (markupBuilder.BuildMarkup(croppedImage));
+                            testBitmap.Save(markupfFilename, ImageFormat.Png);
 
                         } finally
                         {

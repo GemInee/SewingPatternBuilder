@@ -24,11 +24,11 @@ namespace SewingPatternBuilder
         public int PrintablePageHeith { get => printablePageHeight; set => printablePageHeight = value; }
 
 
-        public MarkupBuilder()
+        public MarkupBuilder(int PrintablePageHeight, int PrintablePageWidth, int GluingPointIndent)
         {
-            printablePageHeight = PrintablePageHeith;
+            printablePageHeight = PrintablePageHeight;
             printablePageWidth = PrintablePageWidth;
-            GluingPointIndent = gluingPointIndent;
+            gluingPointIndent = GluingPointIndent;
 
         }
 
@@ -37,18 +37,18 @@ namespace SewingPatternBuilder
         {
 
             //Подготовим необходимые нам точки для потроения разметки
-            var startPoint = new System.Windows.Point(0, 0); //Общиая для всех фигур точка
+            var startPoint = new System.Windows.Point(0, 0); //Общая для всех фигур точка
 
             //Сначала подготовим точки для обводки самого изображения выкройки
             var boarderPoint1 = new System.Windows.Point(startPoint.X + croppedImage.CroppedBitmap.Width, startPoint.Y);
-            var boarderPoint2 = new System.Windows.Point(boarderPoint1.X, boarderPoint1.X - croppedImage.CroppedBitmap.Height);
+            var boarderPoint2 = new System.Windows.Point(boarderPoint1.X, boarderPoint1.Y - croppedImage.CroppedBitmap.Height);
             var boarderPoint3 = new System.Windows.Point(boarderPoint2.X - croppedImage.CroppedBitmap.Width, boarderPoint2.Y);
             var boarderPoint4 = new System.Windows.Point(boarderPoint3.X, boarderPoint3.Y + croppedImage.CroppedBitmap.Height);
 
             //Далее подготовим верхнюю часть разметки для склейки
-            var upGluingPlacePoint1 = new System.Windows.Point(startPoint.X + GluingPointIndent, startPoint.Y);
-            var upGluingPlacePoint2 = new System.Windows.Point(upGluingPlacePoint1.X, upGluingPlacePoint1.Y + croppedImage.CroppedBitmap.Width);
-            var upGluingPlacePoint3 = new System.Windows.Point(upGluingPlacePoint2.X - GluingPointIndent, upGluingPlacePoint2.Y);
+            var upGluingPlacePoint1 = new System.Windows.Point(startPoint.X, startPoint.Y + gluingPointIndent);
+            var upGluingPlacePoint2 = new System.Windows.Point(upGluingPlacePoint1.X + croppedImage.CroppedBitmap.Width, upGluingPlacePoint1.Y);
+            var upGluingPlacePoint3 = new System.Windows.Point(upGluingPlacePoint2.X, upGluingPlacePoint2.Y - gluingPointIndent);
             var upGluingPlacePoint4 = new System.Windows.Point(upGluingPlacePoint3.X - croppedImage.CroppedBitmap.Width, upGluingPlacePoint3.Y);
 
             //Левая часть разметки для склейки
@@ -170,6 +170,7 @@ namespace SewingPatternBuilder
 
             //Передаем путь с фигурами в геометрию
             markupGeometry.Geometry = markupPathGeometry;
+            markupGeometry.Geometry.Transform = new ScaleTransform(1, -1); // Почему-то точка построения ставится вниз влево, а не вверх влево, как обычно - потому просто перевернем результат. Потом починим.
 
             //Конвертация геометрии в Bitmap через DrawingImage. РЕФАКТОРИНГ. Запилить это в метод и вызывать везде после построений.
             var markupDrawingImage = new DrawingImage(markupGeometry);
@@ -180,19 +181,31 @@ namespace SewingPatternBuilder
             scale = 1; //scale = 3.7938105; Здесь масштабировать не нужно, так как работаем с уже реальным масштабом
             var width = markupGeometry.Bounds.Width * scale; //Пока сохраним это. Пригодится при рефакторинге
             var height = markupGeometry.Bounds.Height * scale; // Пока сохраним это. Пригодится при рефакторинге
-            markupImage.Arrange(new Rect(0, 0, width, height));
+            markupImage.Arrange(new Rect(startPoint.X, startPoint.Y, width, height));
 
             var markupRTBitmap = new RenderTargetBitmap((int)width, (int)height, 96, 96, PixelFormats.Pbgra32);
             markupRTBitmap.Render(markupImage);
 
-            var mStream = new MemoryStream();
-            var encoder = new BmpBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(markupRTBitmap));
-            encoder.Save(mStream);
+            //// Тестовый код, для вывода результата рендеринга в файл. Проверяем, что у нас в мемористрим пишется нормальый файл, а не черное полотно.
+            //string markupFilePath = "C:\\patternbuildertest\\PatternCropMarkupFileBeforeMStream_" + croppedImage.XPageID + croppedImage.YPageID + ".png"; // вывлим файлы сразу после построения для проверки
+            //
+            //var encoderFileStream = new PngBitmapEncoder();
+            //encoderFileStream.Frames.Add(BitmapFrame.Create(markupRTBitmap));
+            //using (var fStream = new FileStream(markupFilePath, FileMode.Create))
+            //{
+            //    encoderFileStream.Save(fStream);
+            //}
 
-            using var markupBitmap = new Bitmap(mStream); //Продуем применить using, чтобы после выполнения освобождать память и повторно использовать метод
-            markupBitmap.Dispose(); //Это может привести к исключению... нужно проверить.
-            return markupBitmap;
+            var encoderMemStream = new PngBitmapEncoder();
+            encoderMemStream.Frames.Add(BitmapFrame.Create(markupRTBitmap));
+            using (var mStream = new MemoryStream())
+            {
+
+                encoderMemStream.Save(mStream);
+                var markupBitmap = new Bitmap(mStream);
+                return markupBitmap;
+            }
+
         }
     }
 }
