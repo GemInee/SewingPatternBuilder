@@ -1,22 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using SewingPatternBuilder;
-using System.Printing;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 
 namespace SewingPatternBuilder
@@ -38,12 +27,12 @@ namespace SewingPatternBuilder
         public static Dictionary<int, CroppedImage> CropedFullSizeImages = new Dictionary<int, CroppedImage>();
 
         //Словарь для хранения нарезанных изображений с разметкой
-        public static Dictionary<int, CroppedImage> MarkedupCroppedImages = new Dictionary<int, CroppedImage>();
+        public static Dictionary<int, Bitmap> MarkedupCroppedImages = new Dictionary<int, Bitmap>();
         
         //Словарь для хранения оверлеев для нарезанных изображений
         public static Dictionary<int, Bitmap> OverlayImagesForCropedImages = new Dictionary<int, Bitmap>();
 
-        //Сформируем объекты меров для работы (в будущем надо брать из базы и формировать только те, что нужны, а не все сразу)
+        //Сформируем объекты мероr для работы (в будущем надо брать из базы и формировать только те, что нужны, а не все сразу)
         public static Measure waist = new Measure(0, "Обхват талии", 0, 100);
         public static Measure waist2 = new Measure(1, "Обхват талии 2", 0, 100);
         public static Measure hip = new Measure(3, "Обхват бедер", 0, 0);
@@ -65,12 +54,11 @@ namespace SewingPatternBuilder
         public static Measure rearTuck = new Measure(11, "Задняя вытачка", 0, 9);
         public static Measure sideTuck = new Measure(12, "Боковая вытачка", 0, 9);
         public static BasePattern basePattern = new BasePattern(); //Сразу подготовим главный рабочий объект программы. В будущем надо работать с множетсвом таких и хранить их в базе.
+        
         public static GeometryDrawing geometryResult = null; //Запишем сюда результат построения, чтобы использовать его где потребуемся
         public static System.Drawing.Image imageResult = null; //Запишем сюда результат преобразования геометрии в изображения, чтобы использовать его где потребуется
         public static Bitmap fullSizePatternBitmap = null; //Здесь будем хранить и получать полноразмерный битмап текущей выкройки. (потом надо переделать для подержки многократного построения)
-
-
-
+                
         public MemoryStream memoryStreamForImageConvertation = new MemoryStream(); //Мемористрим для конвертации изображений через файлы
 
         //Заготовим переменные для ширины и высоты печатной области. Целочисленное, 1 = пиксель
@@ -271,6 +259,7 @@ namespace SewingPatternBuilder
             // РЕФАКТОРИНГ. Нужно заменить на универсальный построитель выкроек
             #region Начало построения геометрии выкройки
             PathGeometry pathGeometry = new PathGeometry();
+            #region Фигура 1 Переднее полотнище
             PathFigure pathFigure1 = new PathFigure
             {
                 StartPoint = basePattern.PatternPoints[1]
@@ -324,7 +313,9 @@ namespace SewingPatternBuilder
                 Point = basePattern.PatternPoints[1]
             };
             pathFigure1.Segments.Add(p10lp1);
+            #endregion
 
+            #region Фигура 2 Заднее полотнище
             PathFigure pathFigure2 = new PathFigure
             {
                 StartPoint = basePattern.PatternPoints[7]
@@ -396,7 +387,9 @@ namespace SewingPatternBuilder
                 Point = basePattern.PatternPoints[7]
             };
             pathFigure2.Segments.Add(p9p7);
+            #endregion
 
+            #region Фигура 3 Прямоугольная хрень на заднем полотнище
             PathFigure pathFigure3 = new PathFigure
             {
                 StartPoint = basePattern.PatternPoints[20]
@@ -426,7 +419,9 @@ namespace SewingPatternBuilder
                 Point = basePattern.PatternPoints[20]
             };
             pathFigure3.Segments.Add(p21p20);
+            #endregion
 
+            #region Фигура 4 вторая прямоугольная хрень на заднем полотнище
             PathFigure pathFigure4 = new PathFigure
             {
                 StartPoint = basePattern.PatternPoints[21]
@@ -456,6 +451,10 @@ namespace SewingPatternBuilder
                 Point = basePattern.PatternPoints[21]
             };
             pathFigure4.Segments.Add(p21rp21);
+            #endregion
+
+            
+
             #endregion
 
             geometryDrawing.Geometry = pathGeometry;
@@ -519,20 +518,19 @@ namespace SewingPatternBuilder
         //Метод конвертатор из Bitmap в Image для отображения в интерфейсе
         public System.Windows.Controls.Image ConvertImage(Bitmap bitmap)
         {
-            using (MemoryStream memoryStream = new MemoryStream())
+            using var memoryStream = new MemoryStream();
+            bitmap.Save(memoryStream, ImageFormat.Bmp);
+            BitmapImage bitmapImage = new BitmapImage();
+            bitmapImage.BeginInit();
+            bitmapImage.StreamSource = memoryStream;
+            bitmapImage.EndInit();
+
+            var drawingImage = new System.Windows.Controls.Image
             {
-
-                bitmap.Save(memoryStream, ImageFormat.Bmp);
-                BitmapImage bitmapImage = new BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.StreamSource = memoryStream;
-                bitmapImage.EndInit();
-
-                System.Windows.Controls.Image drawingImage = new System.Windows.Controls.Image();
-                drawingImage.Source = bitmapImage;
-                bitmap.Dispose();
-                return drawingImage;
-            }
+                Source = bitmapImage
+            };
+            bitmap.Dispose();
+            return drawingImage;
         }
 
         private void CropAndSave_Click(object sender, RoutedEventArgs e)
@@ -552,7 +550,7 @@ namespace SewingPatternBuilder
             int cloneRectWidth = pagePrintableWidth;
             int cloneRectHeight = pagePrintableHeight;
             int widthResidue = bitmapImageLocal.Width;
-            int heightResidue = bitmapImageLocal.Height;
+            int heightResidue;
             int bitmapImageKey = 0; //Переменная для отслеживания инкремента ключа с которым обрезанное изображение помещаем в словарик
 
             //Подготовим прямоугольник для нарезки изображения
@@ -608,7 +606,7 @@ namespace SewingPatternBuilder
                         try {
                             CroppedImage croppedImage = new CroppedImage(CurrentXPageID, CurrentYPageID, cropImage);
                             CropedFullSizeImages.Add(bitmapImageKey, croppedImage);
-                            bitmapImageKey++; 
+
 
                             cropImage.Save(filename, ImageFormat.Png);
 
@@ -623,6 +621,9 @@ namespace SewingPatternBuilder
                             graphics.DrawImage(croppedImage.CroppedBitmap, 40, 40);
 
                             markedupCroppBitmap.Save(markedupCroppFilename, ImageFormat.Png);
+                            MarkedupCroppedImages.Add(bitmapImageKey, markedupCroppBitmap);
+
+                            bitmapImageKey++;
 
                             //// Тестовый код для проверки вывода разметки как конечного результата. Мбыть переделать в юнит-тест? (как тестить картиночки?) 
                             //testBitmap.Save(markupfFilename, ImageFormat.Png);

@@ -12,13 +12,7 @@ namespace SewingPatternBuilder
         public Dictionary<int, string> FittingTypes = new Dictionary<int, string>();
         public Dictionary<int, string> BuildingMethods = new Dictionary<int, string>();
         public Dictionary<int, Point> PatternPoints = new Dictionary<int, Point>();
-
-
-        //public struct Line
-        //{
-
-        //}
-
+      
         // Блок параметров выкройки
         private int patternType;
         private int fittingType;
@@ -65,7 +59,7 @@ namespace SewingPatternBuilder
             set => elasticity = value;
         }
 
-    public int FittingType
+        public int FittingType
         {
             get => fittingType;
             set => fittingType = value;
@@ -87,6 +81,9 @@ namespace SewingPatternBuilder
 
             Point point1 = new Point(0, 0); // Поставим начальную точку
             PatternPoints.Add(1, point1);
+
+            Point point1d = new Point(point1.X, point1.Y - 10); //Нужна проверка, если фигура с отклонением назад то 10, если без, то 5
+            PatternPoints.Add(101, point1d);
 
             Point point2 = new Point(point1.X, point1.Y + MainWindow.productLenght.GetSize());
             PatternPoints.Add(2, point2);

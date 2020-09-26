@@ -202,64 +202,67 @@ namespace SewingPatternBuilder
 
             var encoderMemStream = new PngBitmapEncoder();
             encoderMemStream.Frames.Add(BitmapFrame.Create(markupRTBitmap));
-            using (var mStream = new MemoryStream())
+            using var mStream = new MemoryStream();
+            encoderMemStream.Save(mStream);
+            var markupBitmap = new Bitmap(mStream);
+
+            //RectangleF upTextRect = new RectangleF(GluingPointIndent, 0, croppedImage.CroppedBitmap.Width, -GluingPointIndent);
+            RectangleF upTextRect = new RectangleF(GluingPointIndent, 0, Convert.ToSingle(markupRTBitmap.Width), GluingPointIndent);
+            var xUpChar = croppedImage.XPageID;
+            var yUpChar = croppedImage.YPageID;
+            string upText = "" + xUpChar + --yUpChar + "";
+            Graphics graphUpText = Graphics.FromImage(markupBitmap);
+            graphUpText.SmoothingMode = SmoothingMode.AntiAlias;
+            graphUpText.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            graphUpText.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            StringFormat upStringFormat = new StringFormat
             {
-
-                encoderMemStream.Save(mStream);
-                var markupBitmap = new Bitmap(mStream);
-
-                //RectangleF upTextRect = new RectangleF(GluingPointIndent, 0, croppedImage.CroppedBitmap.Width, -GluingPointIndent);
-                RectangleF upTextRect = new RectangleF(GluingPointIndent,0, Convert.ToSingle(markupRTBitmap.Width), GluingPointIndent);
-                var xUpChar = croppedImage.XPageID;
-                var yUpChar = croppedImage.YPageID;
-                string upText = "" + xUpChar + --yUpChar + "";
-                Graphics graphUpText = Graphics.FromImage(markupBitmap);
-                graphUpText.SmoothingMode = SmoothingMode.AntiAlias;
-                graphUpText.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                graphUpText.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                StringFormat upStringFormat = new StringFormat();
-                upStringFormat.Alignment = StringAlignment.Center;
-                upStringFormat.LineAlignment = StringAlignment.Center;
-                graphUpText.DrawString(upText, new Font("Arial", 16), System.Drawing.Brushes.Gray, upTextRect, upStringFormat);
+                Alignment = StringAlignment.Center,
+                LineAlignment = StringAlignment.Center
+            };
+            graphUpText.DrawString(upText, new Font("Arial", 16), System.Drawing.Brushes.Gray, upTextRect, upStringFormat);
 
 
-                //RectangleF leftTextRect = new RectangleF(0, -GluingPointIndent, GluingPointIndent, croppedImage.CroppedBitmap.Height);
-                RectangleF leftTextRect = new RectangleF(0, GluingPointIndent, GluingPointIndent, Convert.ToSingle(markupRTBitmap.Height));
+            //RectangleF leftTextRect = new RectangleF(0, -GluingPointIndent, GluingPointIndent, croppedImage.CroppedBitmap.Height);
+            RectangleF leftTextRect = new RectangleF(0, GluingPointIndent, GluingPointIndent, Convert.ToSingle(markupRTBitmap.Height));
 
-                var xLeftChar = croppedImage.XPageID;
-                var yLeftChar = croppedImage.YPageID;
-                string leftText = "" + --xLeftChar + yLeftChar + "";
-                
-                Graphics graphLeftText = Graphics.FromImage(markupBitmap);
-                graphLeftText.SmoothingMode = SmoothingMode.AntiAlias;
-                graphLeftText.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                graphLeftText.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                
-                StringFormat leftStringFormat = new StringFormat();
-                leftStringFormat.Alignment = StringAlignment.Center;
-                leftStringFormat.LineAlignment = StringAlignment.Center;
-                graphLeftText.DrawString(leftText, new Font("Arial", 16), System.Drawing.Brushes.Gray, leftTextRect, leftStringFormat);
+            var xLeftChar = croppedImage.XPageID;
+            var yLeftChar = croppedImage.YPageID;
+            string leftText = "" + --xLeftChar + yLeftChar + "";
 
-                
-                Rectangle centerTextRect = new Rectangle((Convert.ToInt32(markupRTBitmap.Width) / 2 ) - Convert.ToInt32(50*scaleSquare), (Convert.ToInt32(markupRTBitmap.Height) / 2) - Convert.ToInt32(50 * scaleSquare), Convert.ToInt32(100 * scaleSquare), Convert.ToInt32(100 * scaleSquare));
-                var xCenterChar = croppedImage.XPageID;
-                var yCenterChar = croppedImage.YPageID;
-                string centerText = "" + xCenterChar + yCenterChar + "";
-                
-                Graphics graphCenterText = Graphics.FromImage(markupBitmap);
-                graphCenterText.SmoothingMode = SmoothingMode.AntiAlias;
-                graphCenterText.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                graphCenterText.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                
-                StringFormat centerStringFormat = new StringFormat();
-                centerStringFormat.Alignment = StringAlignment.Center;
-                centerStringFormat.LineAlignment = StringAlignment.Center;
-                graphCenterText.DrawString(centerText, new Font("Arial", 36), System.Drawing.Brushes.LightGray, centerTextRect, centerStringFormat);
-                Pen pen = new Pen(System.Drawing.Color.DarkGray);
-                graphCenterText.DrawRectangle(pen, centerTextRect);
+            Graphics graphLeftText = Graphics.FromImage(markupBitmap);
+            graphLeftText.SmoothingMode = SmoothingMode.AntiAlias;
+            graphLeftText.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            graphLeftText.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-                return markupBitmap;
-            }
+            StringFormat leftStringFormat = new StringFormat
+            {
+                Alignment = StringAlignment.Center,
+                LineAlignment = StringAlignment.Center
+            };
+            graphLeftText.DrawString(leftText, new Font("Arial", 16), System.Drawing.Brushes.Gray, leftTextRect, leftStringFormat);
+
+
+            Rectangle centerTextRect = new Rectangle((Convert.ToInt32(markupRTBitmap.Width) / 2) - Convert.ToInt32(50 * scaleSquare), (Convert.ToInt32(markupRTBitmap.Height) / 2) - Convert.ToInt32(50 * scaleSquare), Convert.ToInt32(100 * scaleSquare), Convert.ToInt32(100 * scaleSquare));
+            var xCenterChar = croppedImage.XPageID;
+            var yCenterChar = croppedImage.YPageID;
+            string centerText = "" + xCenterChar + yCenterChar + "";
+
+            Graphics graphCenterText = Graphics.FromImage(markupBitmap);
+            graphCenterText.SmoothingMode = SmoothingMode.AntiAlias;
+            graphCenterText.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            graphCenterText.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+            StringFormat centerStringFormat = new StringFormat
+            {
+                Alignment = StringAlignment.Center,
+                LineAlignment = StringAlignment.Center
+            };
+            graphCenterText.DrawString(centerText, new Font("Arial", 36), System.Drawing.Brushes.LightGray, centerTextRect, centerStringFormat);
+            Pen pen = new Pen(System.Drawing.Color.DarkGray);
+            graphCenterText.DrawRectangle(pen, centerTextRect);
+
+            return markupBitmap;
 
         }
     }
