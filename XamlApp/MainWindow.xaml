@@ -14,7 +14,13 @@
                 <MenuItem x:Name="MainMenuSavePattern" Header="Сохранить выкройку"/>
                 <MenuItem x:Name="MainMenuExit" Header="Выход"/>
             </MenuItem>
-            <MenuItem x:Name="MainMenuEdit" Header="Правка"/>
+            <MenuItem x:Name="MainMenuEdit" Header="Правка">
+                <MenuItem x:Name="MainMenuUndo" Header="Отменить действие"/>
+                <MenuItem x:Name="MainMenuRedo" Header="Повторить действие"/>
+                <MenuItem x:Name="MainMenuCopy" Header="Копировать"/>
+                <MenuItem x:Name="MainMenuPaste" Header="Вставить"/>
+                <MenuItem x:Name="MainMenuCut" Header="Вырезать"/>
+            </MenuItem>
             <MenuItem x:Name="MainMenuView" Header="Вид"/>
             <MenuItem x:Name="MainMenuSettings" Header="Настройки"/>
             <MenuItem x:Name="MainMenuHelp" Header="Справка" Background="LightGray"/>
@@ -37,11 +43,11 @@
                 <ColumnDefinition Width="360*"/>
                 <ColumnDefinition Width="360*"/>
             </Grid.ColumnDefinitions>
-            <Button x:Name="UpButton1" Grid.Column="0" Grid.Row="0" Content="Ввод параметров выкройки" Background="LightGray" Click="UpButton1_Click" Height="60"/>
-            <Button x:Name="UpButton2" Grid.Column="1" Grid.Row="0" Content="Печать выкройки" Background="LightGray" Click="UpButton2_Click"/>
+            <Button x:Name="UpButton1" Grid.Column="0" Grid.Row="0" Content="Ввод параметров выкройки" Background="LightGray" Click="InputPatternSettings_Click" Height="60"/>
+            <Button x:Name="UpButton2" Grid.Column="4" Grid.Row="0" Content="Печать комплекта" Background="LightGray" Click="PrintPatternSet_Click"/>
             <Button x:Name="CropAndSave" Grid.Column="2" Grid.Row="0" Content="Нарезать и сохранить" Background="LightGray" Click="CropAndSave_Click" />
-            <Button Grid.Column="3" Grid.Row="0" Content="Открыть в реальном размере" Background="LightGray" Click="OpenInRealSizeButton_Click"/>
-            <Button Grid.Column="4" Grid.Row="0" Content="Панель Инструментов 5" Background="LightGray" />
+            <Button Grid.Column="1" Grid.Row="0" Content="Открыть в реальном размере" Background="LightGray" Click="OpenInRealSizeButton_Click"/>
+            <Button Grid.Column="3" Grid.Row="0" Content="Предпросмотр комплекта" Background="LightGray" Click="PreviewPatternSet_Click"/>
             <Button Grid.Column="5" Grid.Row="0" Content="Панель Инструментов 6" Background="LightGray" />
         </Grid>
         <Grid Background="LightGray" ShowGridLines="False" DockPanel.Dock="Left" HorizontalAlignment="Left" VerticalAlignment="Top">

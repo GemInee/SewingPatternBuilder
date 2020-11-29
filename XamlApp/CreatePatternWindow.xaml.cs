@@ -220,7 +220,7 @@ namespace SewingPatternBuilder
         private void BuildButton_Click(object sender, RoutedEventArgs e)
         {
             MainWindow.basePattern.CalculatePoints();
-            ((MainWindow)this.Owner).BuildPattern();
+            ((MainWindow)this.Owner).BuildSkirtPattern();
         }
 
         //Заполним форму тестовыми значениями для более быстрой проверки результата
