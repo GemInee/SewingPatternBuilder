@@ -1,18 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Drawing.Printing;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Xps;
 using System.Windows.Xps.Packaging;
 using System.Windows.Documents;
 using System;
 using System.Windows.Markup;
-using Color = System.Windows.Media.Color;
 
 namespace SewingPatternBuilder
 {
@@ -75,6 +72,60 @@ namespace SewingPatternBuilder
 
         readonly CreatePatternWindow createPatternWindow = new CreatePatternWindow(); //Создадим окно ввода параметров выкройки
         readonly RealSizeView realSizeView = new RealSizeView(); //Создадим окно для отображения полноразмерной выкройки
+        readonly PatternSetPreviewWindow patternSetPreviewWindow = new PatternSetPreviewWindow(); //Создаем окно для превью выкроек перед печатью
+
+        public class PageRangeDocumentPaginator : DocumentPaginator
+        {
+            private int _startIndex;
+            private int _endIndex;
+            private DocumentPaginator _paginator;
+            public PageRangeDocumentPaginator(
+              DocumentPaginator paginator,
+              PageRange pageRange)
+            {
+                _startIndex = pageRange.PageFrom - 1;
+                _endIndex = pageRange.PageTo - 1;
+                _paginator = paginator;
+
+                // Adjust the _endIndex
+                _endIndex = Math.Min(_endIndex, _paginator.PageCount - 1);
+            }
+            public override DocumentPage GetPage(int pageNumber)
+            {
+                // Just return the page from the original
+                // paginator by using the "startIndex"
+                return _paginator.GetPage(pageNumber + _startIndex);
+            }
+
+            public override bool IsPageCountValid
+            {
+                get { return true; }
+            }
+
+            public override int PageCount
+            {
+                get
+                {
+                    if (_startIndex > _paginator.PageCount - 1)
+                        return 0;
+                    if (_startIndex > _endIndex)
+                        return 0;
+
+                    return _endIndex - _startIndex + 1;
+                }
+            }
+
+            public override System.Windows.Size PageSize
+            {
+                get { return _paginator.PageSize; }
+                set { _paginator.PageSize = value; }
+            }
+
+            public override IDocumentPaginatorSource Source
+            {
+                get { return _paginator.Source; }
+            }
+        }
 
         public MainWindow()
         {
@@ -729,62 +780,135 @@ namespace SewingPatternBuilder
         //Орбаботчик нажатия на кнопку "Печать комплекта
         private void PrintPatternSet_Click(object sender, RoutedEventArgs e)
         {
+            PrintDialog printDialog = new PrintDialog();
+            printDialog.UserPageRangeEnabled = true;
+            printDialog.ShowDialog();
 
+            FixedDocument fixedDocument = new FixedDocument();
+            fixedDocument.DocumentPaginator.PageSize = new System.Windows.Size(printDialog.PrintableAreaWidth, printDialog.PrintableAreaHeight);
+
+            PageContent pContent;
+            FixedPage fPage;
+            ImageSource iSource;
+
+            foreach (KeyValuePair<int, Bitmap> markedUpCroppedImage in MarkedupCroppedImages)
+            {
+                PageContent pageContent = new PageContent();
+                fixedDocument.Pages.Add(pageContent);
+                FixedPage fixedPage = new FixedPage();
+                ((IAddChild)pageContent).AddChild(fixedPage);
+                fixedPage.Background = System.Windows.Media.Brushes.White;
+
+                UIElement visual = new UIElement();
+
+                FixedPage.SetLeft(visual, 0);
+                FixedPage.SetTop(visual, 0);
+
+                fixedPage.Width = printDialog.PrintableAreaWidth;
+                fixedPage.Height = printDialog.PrintableAreaHeight;
+
+                //fixedPage.Children.Add((UIElement)visual);
+
+                System.Windows.Size size = new System.Windows.Size(Convert.ToInt32(printDialog.PrintableAreaWidth), Convert.ToInt32(printDialog.PrintableAreaHeight));
+                fixedPage.Measure(size);
+
+                fixedPage.Arrange(new System.Windows.Rect(new System.Windows.Point(), size));
+
+                fixedPage.UpdateLayout();
+                //fixedPage.Width = ;
+                //fixedPage.Height = ;
+                ImageSource imageSource;
+
+                var bitmap = MarkedupCroppedImages[markedUpCroppedImage.Key];
+                using (var mStream = new MemoryStream())
+                {
+                    bitmap.Save(mStream, System.Drawing.Imaging.ImageFormat.Png);
+                    mStream.Position = 0;
+                    imageSource = BitmapFrame.Create(mStream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+                }
+
+                fixedPage.Children.Add(new System.Windows.Controls.Image { Source = imageSource });
+                //pageContent.Child = fixedPage;
+                pContent = pageContent;
+                fPage = fixedPage;
+                iSource = imageSource;
+            }
+
+            //DocumentViewer documentViewer = new DocumentViewer();
+            //documentViewer.Document = fixedDocument;
+
+            var paginator = new PageRangeDocumentPaginator(fixedDocument.DocumentPaginator, printDialog.PageRange);
+
+            //fixedDocument.DocumentPaginator.ComputePageCount();
+
+
+
+             printDialog.PrintDocument(paginator, "TestPatternPrint");
+
+
+            //Короче походу документ получается.
+            //Надо теперь вывести окно с контролами и вьюшкой документа.
+            //Сделал само окно, но пока не понятно как прикрутить контролы и нужно ли само окно.
+            //В общем гуглим как делать превью с фиксированным документом (возможно по аналогии с флоу).
         }// Конец:PrintPatternSet_Click(object sender, RoutedEventArgs e)
 
         //Обработчик нажатия на кнопку "Предпросмотр комплекта"
         private void PreviewPatternSet_Click(object sender, RoutedEventArgs e)
         {
             PrintDialog printDialog = new PrintDialog();
-            printDialog.ShowDialog();
-            FixedDocument fixedDocument = new FixedDocument();
-            PageContent pageContent = new PageContent();
             
-            FixedPage fixedPage = new FixedPage();
-            fixedPage.Background = System.Windows.Media.Brushes.White;
+            FixedDocument fixedDocument = new FixedDocument();
+            fixedDocument.DocumentPaginator.PageSize = new System.Windows.Size(printDialog.PrintableAreaWidth, printDialog.PrintableAreaHeight);
 
-            UIElement visual = new UIElement();
 
-            FixedPage.SetLeft(visual, 0);
-            FixedPage.SetTop(visual, 0);
-
-            fixedPage.Width = printDialog.PrintableAreaWidth;
-            fixedPage.Height = printDialog.PrintableAreaHeight;
-
-            fixedPage.Children.Add((UIElement)visual);
-
-            System.Windows.Size size = new System.Windows.Size(Convert.ToInt32(printDialog.PrintableAreaWidth), Convert.ToInt32(printDialog.PrintableAreaHeight));
-            fixedPage.Measure(size);
-
-            fixedPage.Arrange(new System.Windows.Rect(new System.Windows.Point(), size));
-
-            fixedPage.UpdateLayout();
-            //fixedPage.Width = ;
-            //fixedPage.Height = ;
-            ImageSource imageSource;
-
-            var bitmap = MarkedupCroppedImages[0];
-            using (var mStream = new MemoryStream())
+            foreach (KeyValuePair<int, Bitmap> markedUpCroppedImage in MarkedupCroppedImages)
             {
-                bitmap.Save(mStream, System.Drawing.Imaging.ImageFormat.Png);
-                mStream.Position = 0;
-                imageSource = BitmapFrame.Create(mStream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+                PageContent pageContent = new PageContent();
+
+                FixedPage fixedPage = new FixedPage();
+                fixedPage.Background = System.Windows.Media.Brushes.White;
+
+                UIElement visual = new UIElement();
+
+                FixedPage.SetLeft(visual, 0);
+                FixedPage.SetTop(visual, 0);
+
+                fixedPage.Width = printDialog.PrintableAreaWidth;
+                fixedPage.Height = printDialog.PrintableAreaHeight;
+
+                //fixedPage.Children.Add((UIElement)visual);
+
+                System.Windows.Size size = new System.Windows.Size(Convert.ToInt32(printDialog.PrintableAreaWidth), Convert.ToInt32(printDialog.PrintableAreaHeight));
+                fixedPage.Measure(size);
+
+                fixedPage.Arrange(new System.Windows.Rect(new System.Windows.Point(), size));
+
+                fixedPage.UpdateLayout();
+                //fixedPage.Width = ;
+                //fixedPage.Height = ;
+                ImageSource imageSource;
+
+                var bitmap = MarkedupCroppedImages[markedUpCroppedImage.Key];
+                using (var mStream = new MemoryStream())
+                {
+                    bitmap.Save(mStream, System.Drawing.Imaging.ImageFormat.Png);
+                    mStream.Position = 0;
+                    imageSource = BitmapFrame.Create(mStream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+                }
+                fixedDocument.Pages.Add(pageContent);
+                ((IAddChild)pageContent).AddChild(fixedPage);
+                fixedPage.Children.Add(new System.Windows.Controls.Image { Source = imageSource });
+                //pageContent.Child = fixedPage;
+
             }
 
-            fixedPage.Children.Add(new System.Windows.Controls.Image { Source = imageSource });
-            //pageContent.Child = fixedPage;
-            ((IAddChild)pageContent).AddChild(fixedPage);
 
-            fixedDocument.Pages.Add(pageContent);
-
+            //Рабочий кусок для варианта первью
             DocumentViewer documentViewer = new DocumentViewer();
             documentViewer.Document = fixedDocument;
-
-            printDialog.PrintDocument(fixedDocument.DocumentPaginator, "TestPatternPrint");
-            //Короче походу документ получается.
-            //Надо теперь вывести окно с контролами и вьюшкой документа.
-            //Сделал само окно, но пока не понятно как прикрутить контролы и нужно ли само окно.
-            //В общем гуглим как делать превью с фиксированным документом (возможно по аналогии с флоу).
+            patternSetPreviewWindow.Content = documentViewer.Document;
+            patternSetPreviewWindow.Show();
+            /////////////////////////////////////
 
         }// Конец:PreviewPatternSet_Click(object sender, RoutedEventArgs e)
     }
