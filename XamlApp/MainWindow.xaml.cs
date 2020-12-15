@@ -73,7 +73,7 @@ namespace SewingPatternBuilder
         readonly CreatePatternWindow createPatternWindow = new CreatePatternWindow(); //Создадим окно ввода параметров выкройки
         readonly RealSizeView realSizeView = new RealSizeView(); //Создадим окно для отображения полноразмерной выкройки
         readonly PatternSetPreviewWindow patternSetPreviewWindow = new PatternSetPreviewWindow(); //Создаем окно для превью выкроек перед печатью
-
+        
         public class PageRangeDocumentPaginator : DocumentPaginator
         {
             private int _startIndex;
@@ -83,10 +83,18 @@ namespace SewingPatternBuilder
               DocumentPaginator paginator,
               PageRange pageRange)
             {
-                _startIndex = pageRange.PageFrom - 1;
-                _endIndex = pageRange.PageTo - 1;
-                _paginator = paginator;
+                if (pageRange.PageFrom == 0)
+                    _startIndex = pageRange.PageFrom;
+                else
+                    _startIndex = pageRange.PageFrom - 1;
+                
+                if (pageRange.PageTo == 0)
+                    _endIndex = paginator.PageCount - 1;
+                else
+                    _endIndex = pageRange.PageTo - 1;
 
+                _paginator = paginator;
+                
                 // Adjust the _endIndex
                 _endIndex = Math.Min(_endIndex, _paginator.PageCount - 1);
             }
@@ -101,7 +109,7 @@ namespace SewingPatternBuilder
             {
                 get { return true; }
             }
-
+            
             public override int PageCount
             {
                 get
@@ -624,8 +632,8 @@ namespace SewingPatternBuilder
         {
             //PrintDialog printDialog = new PrintDialog();
             //Выясним какого размера печатная область у нашего принтера
-            pagePrintableWidth = 794; //Для теста укажем ручками, так как принтер не выбран и мы не знаем его область печати
-            pagePrintableHeight = 1123; //Для теста укажем ручками, так как принтер не выбран и мы не знаем его область печати
+            pagePrintableWidth = 753; //Для теста укажем ручками, так как принтер не выбран и мы не знаем его область печати
+            pagePrintableHeight = 1082; //Для теста укажем ручками, так как принтер не выбран и мы не знаем его область печати
 
             //Сделаем локально объект и считаем в него полноразмерное изображение выкройки из файла. В будущем нужно использовать память.
             //Bitmap bitmapImageLocal = new Bitmap("C:\\patternbuildertest\\PatternFull.png", true);
@@ -780,23 +788,76 @@ namespace SewingPatternBuilder
         //Орбаботчик нажатия на кнопку "Печать комплекта
         private void PrintPatternSet_Click(object sender, RoutedEventArgs e)
         {
+            //////PrintDialog printDialog = new PrintDialog();
+            //////printDialog.UserPageRangeEnabled = true;
+            //////printDialog.ShowDialog();
+
+            //////FixedDocument fixedDocument = new FixedDocument();
+            //////fixedDocument.DocumentPaginator.PageSize = new System.Windows.Size(printDialog.PrintableAreaWidth, printDialog.PrintableAreaHeight);
+
+            //////foreach (KeyValuePair<int, Bitmap> markedUpCroppedImage in MarkedupCroppedImages)
+            //////{
+            //////   try
+            //////   {
+            //////        PageContent pageContent = new PageContent();
+
+            //////        FixedPage fixedPage = new FixedPage();
+            //////        //((IAddChild)pageContent).AddChild(fixedPage);
+
+            //////        fixedPage.Background = System.Windows.Media.Brushes.White;
+
+            //////        UIElement visual = new UIElement();
+
+            //////        FixedPage.SetLeft(visual, 0);
+            //////        FixedPage.SetTop(visual, 0);
+
+            //////        fixedPage.Width = printDialog.PrintableAreaWidth;
+            //////        fixedPage.Height = printDialog.PrintableAreaHeight;
+
+            //////        fixedPage.Children.Add((UIElement)visual);
+
+            //////        System.Windows.Size size = new System.Windows.Size(Convert.ToInt32(printDialog.PrintableAreaWidth), Convert.ToInt32(printDialog.PrintableAreaHeight));
+            //////        fixedPage.Measure(size);
+
+            //////        fixedPage.Arrange(new Rect(new System.Windows.Point(), size));
+
+            //////        fixedPage.UpdateLayout();
+            //////        //fixedPage.Width = ;
+            //////        //fixedPage.Height = ;
+            //////        ImageSource imageSource;
+
+            //////        var bitmap = MarkedupCroppedImages[markedUpCroppedImage.Key];
+            //////        using (var mStream = new MemoryStream())
+            //////        {
+            //////            bitmap.Save(mStream, ImageFormat.Png);
+            //////            mStream.Position = 0;
+            //////            imageSource = BitmapFrame.Create(mStream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+            //////        }
+
+            //////        fixedPage.Children.Add(new System.Windows.Controls.Image { Source = imageSource });
+            //////        pageContent.Child = fixedPage;
+            //////        fixedDocument.Pages.Add(pageContent);
+            //////    }
+            //////    finally
+            //////    {
+
+            //////    }
+            //////}
+
+            //DocumentViewer documentViewer = new DocumentViewer();
+            //documentViewer.Document = fixedDocument;
+
             PrintDialog printDialog = new PrintDialog();
-            printDialog.UserPageRangeEnabled = true;
-            printDialog.ShowDialog();
 
             FixedDocument fixedDocument = new FixedDocument();
             fixedDocument.DocumentPaginator.PageSize = new System.Windows.Size(printDialog.PrintableAreaWidth, printDialog.PrintableAreaHeight);
 
-            PageContent pContent;
-            FixedPage fPage;
-            ImageSource iSource;
 
             foreach (KeyValuePair<int, Bitmap> markedUpCroppedImage in MarkedupCroppedImages)
             {
                 PageContent pageContent = new PageContent();
-                fixedDocument.Pages.Add(pageContent);
+
                 FixedPage fixedPage = new FixedPage();
-                ((IAddChild)pageContent).AddChild(fixedPage);
                 fixedPage.Background = System.Windows.Media.Brushes.White;
 
                 UIElement visual = new UIElement();
@@ -812,7 +873,7 @@ namespace SewingPatternBuilder
                 System.Windows.Size size = new System.Windows.Size(Convert.ToInt32(printDialog.PrintableAreaWidth), Convert.ToInt32(printDialog.PrintableAreaHeight));
                 fixedPage.Measure(size);
 
-                fixedPage.Arrange(new System.Windows.Rect(new System.Windows.Point(), size));
+                fixedPage.Arrange(new Rect(new System.Windows.Point(), size));
 
                 fixedPage.UpdateLayout();
                 //fixedPage.Width = ;
@@ -822,28 +883,28 @@ namespace SewingPatternBuilder
                 var bitmap = MarkedupCroppedImages[markedUpCroppedImage.Key];
                 using (var mStream = new MemoryStream())
                 {
-                    bitmap.Save(mStream, System.Drawing.Imaging.ImageFormat.Png);
+                    bitmap.Save(mStream, ImageFormat.Png);
                     mStream.Position = 0;
                     imageSource = BitmapFrame.Create(mStream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
                 }
-
+                fixedDocument.Pages.Add(pageContent);
+                ((IAddChild)pageContent).AddChild(fixedPage);
                 fixedPage.Children.Add(new System.Windows.Controls.Image { Source = imageSource });
+                fixedPage.UpdateLayout();
                 //pageContent.Child = fixedPage;
-                pContent = pageContent;
-                fPage = fixedPage;
-                iSource = imageSource;
+
             }
 
-            //DocumentViewer documentViewer = new DocumentViewer();
-            //documentViewer.Document = fixedDocument;
-
-            var paginator = new PageRangeDocumentPaginator(fixedDocument.DocumentPaginator, printDialog.PageRange);
-
-            //fixedDocument.DocumentPaginator.ComputePageCount();
 
 
+            //var paginator = new PageRangeDocumentPaginator(fixedDocument.DocumentPaginator, printDialog.PageRange);
+            //printDialog.PrintDocument(paginator, "TestPatternPrint");
 
-             printDialog.PrintDocument(paginator, "TestPatternPrint");
+
+            printDialog.PrintDocument(fixedDocument.DocumentPaginator, "Test");
+
+
+
 
 
             //Короче походу документ получается.
@@ -881,7 +942,7 @@ namespace SewingPatternBuilder
                 System.Windows.Size size = new System.Windows.Size(Convert.ToInt32(printDialog.PrintableAreaWidth), Convert.ToInt32(printDialog.PrintableAreaHeight));
                 fixedPage.Measure(size);
 
-                fixedPage.Arrange(new System.Windows.Rect(new System.Windows.Point(), size));
+                fixedPage.Arrange(new Rect(new System.Windows.Point(), size));
 
                 fixedPage.UpdateLayout();
                 //fixedPage.Width = ;
@@ -891,7 +952,7 @@ namespace SewingPatternBuilder
                 var bitmap = MarkedupCroppedImages[markedUpCroppedImage.Key];
                 using (var mStream = new MemoryStream())
                 {
-                    bitmap.Save(mStream, System.Drawing.Imaging.ImageFormat.Png);
+                    bitmap.Save(mStream, ImageFormat.Png);
                     mStream.Position = 0;
                     imageSource = BitmapFrame.Create(mStream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
                 }
