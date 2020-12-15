@@ -880,16 +880,20 @@ namespace SewingPatternBuilder
                 //fixedPage.Height = ;
                 ImageSource imageSource;
 
-                var bitmap = MarkedupCroppedImages[markedUpCroppedImage.Key];
+                var bitmap = markedUpCroppedImage.Value;
+                var bmpImg = new BitmapImage();
                 using (var mStream = new MemoryStream())
                 {
                     bitmap.Save(mStream, ImageFormat.Png);
-                    mStream.Position = 0;
-                    imageSource = BitmapFrame.Create(mStream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+                    bmpImg.BeginInit();
+                    bmpImg.StreamSource = mStream;
+                    bmpImg.CacheOption = BitmapCacheOption.OnLoad;
+                    bmpImg.EndInit();
                 }
+                var img = new System.Windows.Controls.Image { Source = bmpImg };
                 fixedDocument.Pages.Add(pageContent);
                 ((IAddChild)pageContent).AddChild(fixedPage);
-                fixedPage.Children.Add(new System.Windows.Controls.Image { Source = imageSource });
+                fixedPage.Children.Add(new System.Windows.Controls.Image { Source = bmpImg });
                 fixedPage.UpdateLayout();
                 //pageContent.Child = fixedPage;
 
