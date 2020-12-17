@@ -15,6 +15,8 @@ namespace SewingPatternBuilder
         public List<int> patternListForMeasure = new List<int>();
         public List<int> methodListForMeasure = new List<int>();
 
+        public int Size { get => size; }
+
         public string Name { get => name; set => name = value; }
 
         public event EventHandler MeasureSizeChanged;

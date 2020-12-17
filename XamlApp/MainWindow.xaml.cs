@@ -153,7 +153,7 @@ namespace SewingPatternBuilder
 
         }
 
-        private void InitRawMeasures()
+        private static void InitRawMeasures()
         {
             waist.methodListForMeasure.Add(7);
             waist.patternListForMeasure.Add(2);
@@ -192,7 +192,7 @@ namespace SewingPatternBuilder
             RawMeasureList.Add(10, ankle);
         }
 
-        private void InitDerivativeMeasures()
+        private static void InitDerivativeMeasures()
         {
             waistHalf.methodListForMeasure.Add(7);
             waistHalf.patternListForMeasure.Add(2);
@@ -240,7 +240,7 @@ namespace SewingPatternBuilder
             RecalculateRawMeasures();
         }
 
-        private void RecalculateRawMeasures()
+        private static void RecalculateRawMeasures()
         {
 
             foreach (KeyValuePair<int, Measure> kvp in DerivativeMeasureList)
@@ -255,7 +255,7 @@ namespace SewingPatternBuilder
         }
 
         //Фильтруем списки мерок, на нужные и ненужные для данного построения
-        private void FilterRawMeasures()
+        private static void FilterRawMeasures()
         {
             //Отфильтруем список первичных мерок в соответствии с настройками
             foreach (KeyValuePair<int, Measure> kvp in RawMeasureList)
@@ -273,7 +273,7 @@ namespace SewingPatternBuilder
             }
         }
 
-        private void FilterDerivativeMeasures()
+        private static void FilterDerivativeMeasures()
         {
             //Отфильтруем список производных мерок в соответствии с настройками
             foreach (KeyValuePair<int, Measure> kvp in DerivativeMeasureList)
@@ -304,7 +304,7 @@ namespace SewingPatternBuilder
 
 
         // Построение плечевого исделия
-        public void BuildShoulderPattern()
+        public static void BuildShoulderPattern()
         {
             GeometryDrawing geometryDrawing = new GeometryDrawing
             {
@@ -558,14 +558,6 @@ namespace SewingPatternBuilder
                 fullSizePatternBitmap = new Bitmap(mStream);
             }
 
-
-            ////Устарел. Теперь это тестовый код для проверки результата построения и рендеринга
-            //using (var fStream = new FileStream("C:\\patternbuildertest\\PatternFull.Png", FileMode.Create))
-            //{
-            //    encoder.Save(fStream);
-            //}
-            
-
             image.Source = geometryImage;
             image.Stretch = Stretch.None;
 
@@ -578,15 +570,17 @@ namespace SewingPatternBuilder
         }
 
         //Обработка кнопки "Печать набора"
-        public void PrintPattern()
+        public static void PrintPattern()
         {
             // Создадим диалог печати и установим некоторые свойства
-            PrintDialog pDialog = new PrintDialog();
-            pDialog.PageRangeSelection = PageRangeSelection.AllPages;
-            pDialog.UserPageRangeEnabled = true;
-            
+            PrintDialog pDialog = new PrintDialog
+            {
+                PageRangeSelection = PageRangeSelection.AllPages,
+                UserPageRangeEnabled = true
+            };
+
             // Покажем окно диалога печати, а потом проверим, нажал ли пользователь Печать. Если да, то выполним печать документа
-            Nullable<Boolean> print = pDialog.ShowDialog();
+            bool? print = pDialog.ShowDialog();
             if (print == true)
             {
                 XpsDocument xpsDocument = new XpsDocument("C:\\FixedDocumentSequence.xps", FileAccess.ReadWrite);
@@ -598,7 +592,7 @@ namespace SewingPatternBuilder
         }
 
         //Метод конвертатор из Bitmap в Image для отображения в интерфейсе
-        public System.Windows.Controls.Image ConvertImage(Bitmap bitmap)
+        public static System.Windows.Controls.Image ConvertImage(Bitmap bitmap)
         {
             using var memoryStream = new MemoryStream();
             bitmap.Save(memoryStream, ImageFormat.Bmp);
@@ -616,7 +610,7 @@ namespace SewingPatternBuilder
         }// Конец:ConvertImage(Bitmap bitmap)
 
         //Метод конвертатор из Bitmap в BitmapImage
-        public BitmapImage BitmapToBitmapImage(Bitmap bitmap)
+        public static BitmapImage BitmapToBitmapImage(Bitmap bitmap)
         {
             MemoryStream ms = new MemoryStream();
             ((System.Drawing.Bitmap)bitmap).Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
@@ -721,12 +715,9 @@ namespace SewingPatternBuilder
 
                             bitmapImageKey++;
 
-                            //// Тестовый код для проверки вывода разметки как конечного результата. Мбыть переделать в юнит-тест? (как тестить картиночки?) 
-                            //testBitmap.Save(markupfFilename, ImageFormat.Png);
-
                         } finally
                         {
-                            //cropImage.UnlockBits(cropImage.LockBits(cloneRect, ImageLockMode.ReadWrite, cropImage.PixelFormat)); //Возможно лишнее, мы же ничего не лочили
+
                             cropImage.Dispose(); //Типа деструктор, чтобы в результате using мы точно убили объект и могли содать его снова
 
                         }
@@ -748,35 +739,8 @@ namespace SewingPatternBuilder
                 CurrentXPageID++;
 
             }
-
-
-
-
-
         }// Конец:CropAndSave_Click(object sender, RoutedEventArgs e)
 
-        //Функция формирования и записи страницы XPS документа с изображением части выкройки
-        private void WritePatternToXPS()
-        {
-            FixedDocument fixedDocument = new FixedDocument();
-            PageContent pageContent = new PageContent();
-            FixedPage fixedPage = new FixedPage();
-            ImageSource imageSource;
-
-            var bitmap = MarkedupCroppedImages[0];
-            using (var mStream = new MemoryStream())
-            {
-                bitmap.Save(mStream, System.Drawing.Imaging.ImageFormat.Bmp);
-                mStream.Position = 0;
-                imageSource = BitmapFrame.Create(mStream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
-            }
-
-            fixedPage.Children.Add(new System.Windows.Controls.Image { Source = imageSource });
-            pageContent.Child = fixedPage;
-            fixedDocument.Pages.Add(pageContent);
-
-
-        }// Конец:WritePatternToXPS()
 
         //Обработчик кнопки "Ввод параметров выкройки"
         private void InputPatternSettings_Click(object sender, RoutedEventArgs e)
@@ -788,65 +752,6 @@ namespace SewingPatternBuilder
         //Орбаботчик нажатия на кнопку "Печать комплекта
         private void PrintPatternSet_Click(object sender, RoutedEventArgs e)
         {
-            //////PrintDialog printDialog = new PrintDialog();
-            //////printDialog.UserPageRangeEnabled = true;
-            //////printDialog.ShowDialog();
-
-            //////FixedDocument fixedDocument = new FixedDocument();
-            //////fixedDocument.DocumentPaginator.PageSize = new System.Windows.Size(printDialog.PrintableAreaWidth, printDialog.PrintableAreaHeight);
-
-            //////foreach (KeyValuePair<int, Bitmap> markedUpCroppedImage in MarkedupCroppedImages)
-            //////{
-            //////   try
-            //////   {
-            //////        PageContent pageContent = new PageContent();
-
-            //////        FixedPage fixedPage = new FixedPage();
-            //////        //((IAddChild)pageContent).AddChild(fixedPage);
-
-            //////        fixedPage.Background = System.Windows.Media.Brushes.White;
-
-            //////        UIElement visual = new UIElement();
-
-            //////        FixedPage.SetLeft(visual, 0);
-            //////        FixedPage.SetTop(visual, 0);
-
-            //////        fixedPage.Width = printDialog.PrintableAreaWidth;
-            //////        fixedPage.Height = printDialog.PrintableAreaHeight;
-
-            //////        fixedPage.Children.Add((UIElement)visual);
-
-            //////        System.Windows.Size size = new System.Windows.Size(Convert.ToInt32(printDialog.PrintableAreaWidth), Convert.ToInt32(printDialog.PrintableAreaHeight));
-            //////        fixedPage.Measure(size);
-
-            //////        fixedPage.Arrange(new Rect(new System.Windows.Point(), size));
-
-            //////        fixedPage.UpdateLayout();
-            //////        //fixedPage.Width = ;
-            //////        //fixedPage.Height = ;
-            //////        ImageSource imageSource;
-
-            //////        var bitmap = MarkedupCroppedImages[markedUpCroppedImage.Key];
-            //////        using (var mStream = new MemoryStream())
-            //////        {
-            //////            bitmap.Save(mStream, ImageFormat.Png);
-            //////            mStream.Position = 0;
-            //////            imageSource = BitmapFrame.Create(mStream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
-            //////        }
-
-            //////        fixedPage.Children.Add(new System.Windows.Controls.Image { Source = imageSource });
-            //////        pageContent.Child = fixedPage;
-            //////        fixedDocument.Pages.Add(pageContent);
-            //////    }
-            //////    finally
-            //////    {
-
-            //////    }
-            //////}
-
-            //DocumentViewer documentViewer = new DocumentViewer();
-            //documentViewer.Document = fixedDocument;
-
             PrintDialog printDialog = new PrintDialog();
 
             FixedDocument fixedDocument = new FixedDocument();
@@ -857,8 +762,10 @@ namespace SewingPatternBuilder
             {
                 PageContent pageContent = new PageContent();
 
-                FixedPage fixedPage = new FixedPage();
-                fixedPage.Background = System.Windows.Media.Brushes.White;
+                FixedPage fixedPage = new FixedPage
+                {
+                    Background = System.Windows.Media.Brushes.White
+                };
 
                 UIElement visual = new UIElement();
 
@@ -868,17 +775,12 @@ namespace SewingPatternBuilder
                 fixedPage.Width = printDialog.PrintableAreaWidth;
                 fixedPage.Height = printDialog.PrintableAreaHeight;
 
-                //fixedPage.Children.Add((UIElement)visual);
-
                 System.Windows.Size size = new System.Windows.Size(Convert.ToInt32(printDialog.PrintableAreaWidth), Convert.ToInt32(printDialog.PrintableAreaHeight));
                 fixedPage.Measure(size);
 
                 fixedPage.Arrange(new Rect(new System.Windows.Point(), size));
 
                 fixedPage.UpdateLayout();
-                //fixedPage.Width = ;
-                //fixedPage.Height = ;
-                ImageSource imageSource;
 
                 var bitmap = markedUpCroppedImage.Value;
                 var bmpImg = new BitmapImage();
@@ -895,26 +797,11 @@ namespace SewingPatternBuilder
                 ((IAddChild)pageContent).AddChild(fixedPage);
                 fixedPage.Children.Add(new System.Windows.Controls.Image { Source = bmpImg });
                 fixedPage.UpdateLayout();
-                //pageContent.Child = fixedPage;
 
             }
 
-
-
-            //var paginator = new PageRangeDocumentPaginator(fixedDocument.DocumentPaginator, printDialog.PageRange);
-            //printDialog.PrintDocument(paginator, "TestPatternPrint");
-
-
             printDialog.PrintDocument(fixedDocument.DocumentPaginator, "Test");
 
-
-
-
-
-            //Короче походу документ получается.
-            //Надо теперь вывести окно с контролами и вьюшкой документа.
-            //Сделал само окно, но пока не понятно как прикрутить контролы и нужно ли само окно.
-            //В общем гуглим как делать превью с фиксированным документом (возможно по аналогии с флоу).
         }// Конец:PrintPatternSet_Click(object sender, RoutedEventArgs e)
 
         //Обработчик нажатия на кнопку "Предпросмотр комплекта"
@@ -930,8 +817,10 @@ namespace SewingPatternBuilder
             {
                 PageContent pageContent = new PageContent();
 
-                FixedPage fixedPage = new FixedPage();
-                fixedPage.Background = System.Windows.Media.Brushes.White;
+                FixedPage fixedPage = new FixedPage
+                {
+                    Background = System.Windows.Media.Brushes.White
+                };
 
                 UIElement visual = new UIElement();
 
@@ -941,16 +830,13 @@ namespace SewingPatternBuilder
                 fixedPage.Width = printDialog.PrintableAreaWidth;
                 fixedPage.Height = printDialog.PrintableAreaHeight;
 
-                //fixedPage.Children.Add((UIElement)visual);
-
                 System.Windows.Size size = new System.Windows.Size(Convert.ToInt32(printDialog.PrintableAreaWidth), Convert.ToInt32(printDialog.PrintableAreaHeight));
                 fixedPage.Measure(size);
 
                 fixedPage.Arrange(new Rect(new System.Windows.Point(), size));
 
                 fixedPage.UpdateLayout();
-                //fixedPage.Width = ;
-                //fixedPage.Height = ;
+
                 ImageSource imageSource;
 
                 var bitmap = MarkedupCroppedImages[markedUpCroppedImage.Key];
@@ -963,17 +849,14 @@ namespace SewingPatternBuilder
                 fixedDocument.Pages.Add(pageContent);
                 ((IAddChild)pageContent).AddChild(fixedPage);
                 fixedPage.Children.Add(new System.Windows.Controls.Image { Source = imageSource });
-                //pageContent.Child = fixedPage;
-
             }
 
-
-            //Рабочий кусок для варианта первью
-            DocumentViewer documentViewer = new DocumentViewer();
-            documentViewer.Document = fixedDocument;
+            DocumentViewer documentViewer = new DocumentViewer
+            {
+                Document = fixedDocument
+            };
             patternSetPreviewWindow.Content = documentViewer.Document;
             patternSetPreviewWindow.Show();
-            /////////////////////////////////////
 
         }// Конец:PreviewPatternSet_Click(object sender, RoutedEventArgs e)
     }

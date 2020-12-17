@@ -22,8 +22,7 @@ namespace SewingPatternBuilder
             InitializeComponent();
             //Подпишемся на события изменения значения размера мерки
             MainWindow.hipHalf.MeasureSizeChanged += MeasureSizeChanged;
- 
-         
+
             //Привяжем содержимое комбобоксов к словарям
             PatternType_Box.ItemsSource = MainWindow.basePattern.PatternTypes.Values;
             MethodsList_Box.ItemsSource = MainWindow.basePattern.BuildingMethods.Values;
@@ -36,70 +35,70 @@ namespace SewingPatternBuilder
                 Source = MainWindow.waistHalf,
                 Path = new PropertyPath("Size")
             };
-            WaistHalf_TextBox.SetBinding(TextBlock.TextProperty, bindingWaistHalf);
+            WaistHalf.SetBinding(TextBlock.TextProperty, bindingWaistHalf);
 
             Binding bindingHipHalf = new Binding
             {
                 Source = MainWindow.hipHalf,
                 Path = new PropertyPath("Size")
             };
-            HipHalf_TextBox.SetBinding(TextBlock.TextProperty, bindingHipHalf);
+            HipHalf.SetBinding(TextBlock.TextProperty, bindingHipHalf);
 
             Binding bindingHipAllowance = new Binding
             {
                 Source = MainWindow.hipAllowance,
                 Path = new PropertyPath("Size")
             };
-            HipAllowance_TextBox.SetBinding(TextBlock.TextProperty, bindingHipAllowance);
+            HipAllowance.SetBinding(TextBlock.TextProperty, bindingHipAllowance);
 
             Binding bindingWaistAllowance = new Binding
             {
                 Source = MainWindow.waistAllowance,
                 Path = new PropertyPath("Size")
             };
-            WaistAllowance_TextBox.SetBinding(TextBlock.TextProperty, bindingWaistAllowance);
+            WaistAllowance.SetBinding(TextBlock.TextProperty, bindingWaistAllowance);
 
             Binding bindingFrontCloth = new Binding
             {
                 Source = MainWindow.frontCloth,
                 Path = new PropertyPath("Size")
             };
-            FrontCloth_TextBox.SetBinding(TextBlock.TextProperty, bindingFrontCloth);
+            FrontCloth.SetBinding(TextBlock.TextProperty, bindingFrontCloth);
 
             Binding bindingWRearCloth = new Binding
             {
                 Source = MainWindow.rearCloth,
                 Path = new PropertyPath("Size")
             };
-            RearCloth_TextBox.SetBinding(TextBlock.TextProperty, bindingWRearCloth);
+            RearCloth.SetBinding(TextBlock.TextProperty, bindingWRearCloth);
 
             Binding bindingTuckSolutionSum = new Binding
             {
                 Source = MainWindow.tuckSolutionSum,
                 Path = new PropertyPath("Size")
             };
-            TuckSolutionSum_TextBox.SetBinding(TextBlock.TextProperty, bindingTuckSolutionSum);
+            TuckSolutionSum.SetBinding(TextBlock.TextProperty, bindingTuckSolutionSum);
 
             Binding bindingFrontTuck = new Binding
             {
                 Source = MainWindow.frontTuck,
                 Path = new PropertyPath("Size")
             };
-            FrontTuck_TextBox.SetBinding(TextBlock.TextProperty, bindingFrontTuck);
+            FrontTuck.SetBinding(TextBlock.TextProperty, bindingFrontTuck);
 
             Binding bindingRearTuck = new Binding
             {
                 Source = MainWindow.rearTuck,
                 Path = new PropertyPath("Size")
             };
-            RearTuck_TextBox.SetBinding(TextBlock.TextProperty, bindingRearTuck);
+            RearTuck.SetBinding(TextBlock.TextProperty, bindingRearTuck);
 
             Binding bindingSideTuck = new Binding
             {
                 Source = MainWindow.sideTuck,
                 Path = new PropertyPath("Size")
             };
-            SideTuck_TextBox.SetBinding(TextBlock.TextProperty, bindingSideTuck);
+            SideTuck.SetBinding(TextBlock.TextProperty, bindingSideTuck);
 
             //Создадим подписки на события изменения значений производных мерок
 
@@ -154,16 +153,16 @@ namespace SewingPatternBuilder
 
             ((MainWindow)this.Owner).RecalculateMeasures();
 
-            WaistHalf_TextBox.Text = Convert.ToString(MainWindow.waistHalf.GetSize());
-            HipHalf_TextBox.Text = Convert.ToString(MainWindow.hipHalf.GetSize());
-            HipAllowance_TextBox.Text = Convert.ToString(MainWindow.hipAllowance.GetSize());
-            WaistAllowance_TextBox.Text = Convert.ToString(MainWindow.waistAllowance.GetSize());
-            FrontCloth_TextBox.Text = Convert.ToString(MainWindow.frontCloth.GetSize());
-            RearCloth_TextBox.Text = Convert.ToString(MainWindow.rearCloth.GetSize());
-            TuckSolutionSum_TextBox.Text = Convert.ToString(MainWindow.tuckSolutionSum.GetSize());
-            FrontTuck_TextBox.Text = Convert.ToString(MainWindow.frontTuck.GetSize());
-            RearTuck_TextBox.Text = Convert.ToString(MainWindow.rearTuck.GetSize());
-            SideTuck_TextBox.Text = Convert.ToString(MainWindow.sideTuck.GetSize());
+            WaistHalf.Text = Convert.ToString(MainWindow.waistHalf.GetSize());
+            HipHalf.Text = Convert.ToString(MainWindow.hipHalf.GetSize());
+            HipAllowance.Text = Convert.ToString(MainWindow.hipAllowance.GetSize());
+            WaistAllowance.Text = Convert.ToString(MainWindow.waistAllowance.GetSize());
+            FrontCloth.Text = Convert.ToString(MainWindow.frontCloth.GetSize());
+            RearCloth.Text = Convert.ToString(MainWindow.rearCloth.GetSize());
+            TuckSolutionSum.Text = Convert.ToString(MainWindow.tuckSolutionSum.GetSize());
+            FrontTuck.Text = Convert.ToString(MainWindow.frontTuck.GetSize());
+            RearTuck.Text = Convert.ToString(MainWindow.rearTuck.GetSize());
+            SideTuck.Text = Convert.ToString(MainWindow.sideTuck.GetSize());
 
         }
 
